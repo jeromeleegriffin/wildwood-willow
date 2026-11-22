@@ -18,3 +18,16 @@ collections:
       - { label: Featured, name: featured, widget: boolean, default: false }
       - { label: Category, name: category, widget: select, options: ["Capsules", "Tinctures", "Teas", "Topicals", "Home", "Services"] }
       - { label: Image, name: image, widget: image }
+
+  - name: settings
+    label: Site Settings
+    files:
+      - file: content/settings/contact.md
+        label: Contact & Hours
+        name: contact
+        fields:
+          - { label: Phone Number, name: phone, widget: string, default: "507-430-1250" }
+          - { label: Address Line 1, name: address1, widget: string, default: "21b SE 2nd St" }
+          - { label: Address Line 2, name: address2, widget: string, default: "Ortonville MN" }
+          - { label: Hours Line 1, name: hours1, widget: string, default: "Tue-Fri" }
+          - { label: Hours Line 2, name: hours2, widget: string, default: "9am-5pm" }
