@@ -2,8 +2,6 @@ backend:
   name: github
   repo: jeromeleegriffin/wildwood-willow
   branch: main
-  base_url: https://decap-cms-oauth-provider.netlify.app
-  auth_endpoint: auth
 
 media_folder: images
 public_folder: /images
