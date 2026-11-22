@@ -1,0 +1,103 @@
+/* Earthy olive / terracotta theme */
+:root {
+  --olive: #4a5d3a;
+  --terracotta: #c17a4a;
+  --cream: #f8f4ef;
+  --dark: #2c2c2c;
+}
+
+body {
+  font-family: Georgia, serif;
+  margin: 0;
+  background: var(--cream);
+  color: var(--dark);
+}
+
+header {
+  background: var(--olive);
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo { font-size: 2rem; font-weight: bold; }
+
+.contact-bar {
+  background: #3d4d30;
+  color: white;
+  display: flex;
+  justify-content: space-around;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.hero {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.hero h2 {
+  font-size: 2.5rem;
+  color: var(--olive);
+  margin: 0.5rem 0;
+}
+
+.btn {
+  background: var(--terracotta);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 1rem;
+}
+
+.featured {
+  padding: 2rem 1rem;
+}
+
+.featured h2 {
+  text-align: center;
+  color: var(--olive);
+  border-bottom: 2px solid var(--terracotta);
+  display: inline-block;
+  margin: 0 auto 1.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.card {
+  background: white;
+  border: 1px solid #e0d8d0;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.categories {
+  display: flex;
+  justify-content: space-around;
+  background: var(--olive);
+  padding: 1rem;
+  margin-top: 2rem;
+}
+
+.categories a {
+  color: white;
+  text-decoration: none;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background: var(--olive);
+  color: white;
+}
