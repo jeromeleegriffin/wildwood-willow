@@ -2,6 +2,8 @@ backend:
   name: github
   repo: jeromeleegriffin/wildwood-willow
   branch: main
+  base_url: https://api.github.com
+  auth_endpoint: /login/oauth/authorize?client_id=Ov23licq5KAD3YnxNc1R
 
 media_folder: images
 public_folder: /images
