@@ -100,6 +100,7 @@ body {
   border: 3px solid #e5ddd5;
   object-fit: cover;
   aspect-ratio: 1;
+  background: #f0ebe6;
 }
 
 .main-content {
@@ -145,11 +146,21 @@ body {
 }
 .card img {
   width: 100%;
-  height: 120px;
+  height: 140px;
   object-fit: contain;
   margin-bottom: 12px;
   background: #f9f6f2;
   border-radius: 4px;
+  /* Hide broken image icon and alt text */
+  color: transparent;
+  font-size: 0;
+}
+.card img::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #f9f6f2;
 }
 .card h3 { font-size: 1rem; margin-bottom: 8px; line-height: 1.2; font-weight: bold; color: var(--olive); }
 .card p { font-size: 0.9rem; color: #555; line-height: 1.4; flex: 1; }
