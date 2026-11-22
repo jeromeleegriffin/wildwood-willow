@@ -7,55 +7,101 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header>
-    <div class="logo-area">
-      <div class="logo">W&W</div>
-      <h1>WILDWOOD & WILLOW<br>BOTANICALS</h1>
-    </div>
-    <div class="teresa-photo">
-      <img src="images/teresa-cartoon.png" alt="Teresa" onerror="this.style.display='none'">
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="name">WILDWOOD &amp; WILLOW</div>
+        <div class="sub">BOTANICALS</div>
+      </div>
+      <div class="menu">☰</div>
     </div>
   </header>
 
-  <div class="contact-bar">
-    <span>📞 507-430-1250</span>
-    <span>📍 21b SE 2nd St, Ortonville, MN</span>
-    <span>🕒 Tue–Fri 9am–5pm</span>
+  <div class="contact">
+    <div>📞 507-430-1250</div>
+    <div>📍 21b SE 2nd St<br>Ortonville MN</div>
+    <div>🕒 Tue-Fri<br>9am-5pm</div>
   </div>
 
   <section class="hero">
-    <h2>Rooted in Nature.<br>Made for Wellness.</h2>
-    <p>Handcrafted botanical products to support your body, mind, and everyday well-being.</p>
-    <a href="#products" class="btn">SHOP ALL PRODUCTS</a>
-  </section>
-
-  <section id="products" class="featured">
-    <h2>FEATURED PRODUCTS</h2>
-    <div class="grid" id="product-grid"></div>
-  </section>
-
-  <section class="featured">
-    <h2>FEATURED SERVICES</h2>
-    <div class="grid">
-      <div class="card"><h3>Reflexology</h3><p>Restore balance and encourage deep relaxation through targeted foot therapy.</p></div>
-      <div class="card"><h3>Vibration Therapy</h3><p>Support circulation, muscle recovery, and overall wellness.</p></div>
-      <div class="card"><h3>Foot Detox</h3><p>Draw out toxins and restore balance with a relaxing ionic foot bath.</p></div>
-      <div class="card"><h3>Massage Chair</h3><p>Unwind with therapeutic massage in the comfort of our private relaxation area.</p></div>
+    <div class="hero-content">
+      <h1>Rooted in<br>Nature.<br><span>Made for<br>Wellness.</span></h1>
+      <p>Handcrafted botanical products to support your body, mind, and everyday well-being.</p>
+      <a href="#products" class="cta">SHOP ALL PRODUCTS →</a>
+    </div>
+    <div class="hero-image">
+      <img src="images/teresa.png" alt="Teresa">
     </div>
   </section>
 
+  <div class="main-content">
+    <section id="products" class="section">
+      <h2>FEATURED PRODUCTS</h2>
+      <div class="cards">
+        <div class="card">
+          <img src="images/arnica.jpg" alt="Arnica Aloe Cream">
+          <h3>Arnica Aloe Cream</h3>
+          <p>Soothing relief for sore muscles and minor aches.</p>
+          <span class="arrow">→</span>
+        </div>
+        <div class="card">
+          <img src="images/mental-reset.jpg" alt="Mental Reset">
+          <h3>Mental Reset</h3>
+          <p>Supports clarity, focus, and stress resilience.</p>
+          <span class="arrow">→</span>
+        </div>
+        <div class="card">
+          <img src="images/nerve-pain.jpg" alt="Nerve Pain Relaxant">
+          <h3>Nerve Pain Relaxant</h3>
+          <p>Herbal support for nerve discomfort and relaxation.</p>
+          <span class="arrow">→</span>
+        </div>
+        <div class="card">
+          <img src="images/appetite.jpg" alt="Appetite Suppressant">
+          <h3>Appetite Suppressant</h3>
+          <p>Natural support for cravings and mindful eating.</p>
+          <span class="arrow">→</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>FEATURED SERVICES</h2>
+      <div class="cards">
+        <div class="card">
+          <img src="images/reflexology.jpg" alt="Reflexology">
+          <h3>Reflexology</h3>
+          <p>Restore balance and encourage deep relaxation through targeted foot therapy.</p>
+          <span class="arrow">→</span>
+        </div>
+        <div class="card">
+          <img src="images/vibration.jpg" alt="Vibration Therapy">
+          <h3>Vibration Therapy</h3>
+          <p>Support circulation, muscle recovery, and overall wellness.</p>
+          <span class="arrow">→</span>
+        </div>
+        <div class="card">
+          <img src="images/foot-detox.jpg" alt="Foot Detox">
+          <h3>Foot Detox</h3>
+          <p>Draw out toxins and restore balance with a relaxing ionic foot bath.</p>
+          <span class="arrow">→</span>
+        </div>
+        <div class="card">
+          <img src="images/massage-chair.jpg" alt="Massage Chair">
+          <h3>Massage Chair</h3>
+          <p>Unwind with therapeutic massage in the comfort of our private relaxation area.</p>
+          <span class="arrow">→</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
   <nav class="categories">
-    <a href="#">Capsules</a>
-    <a href="#">Tinctures</a>
-    <a href="#">Teas</a>
-    <a href="#">Topicals</a>
-    <a href="#">Services</a>
+    <div><span>💊</span>CAPSULES</div>
+    <div><span>💧</span>TINCTURES</div>
+    <div><span>🍵</span>TEAS</div>
+    <div><span>🌿</span>TOPICALS</div>
+    <div><span>🌱</span>SERVICES</div>
   </nav>
-
-  <footer>
-    <p>Made with care in Ortonville, Minnesota</p>
-  </footer>
-
-  <script src="js/main.js"></script>
 </body>
 </html>
