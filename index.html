@@ -10,7 +10,7 @@
   <header class="header">
     <div class="header-inner">
       <div class="brand">
-        <div class="name">WILDWOOD &amp; WILLOW</div>
+        <div class="name">WILDWOOD & WILLOW</div>
         <div class="sub">BOTANICALS</div>
       </div>
       <div class="menu">☰</div>
@@ -103,5 +103,18 @@
     <div><span>🌿</span>TOPICALS</div>
     <div><span>🌱</span>SERVICES</div>
   </nav>
+
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script>
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on('init', user => {
+        if (!user) {
+          window.netlifyIdentity.on('login', () => {
+            document.location.href = '/admin/';
+          });
+        }
+      });
+    }
+  </script>
 </body>
 </html>
