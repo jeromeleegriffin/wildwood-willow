@@ -1,6 +1,9 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: jeromeleegriffin/wildwood-willow
   branch: main
+  # You will add a base_url here after creating a GitHub OAuth app
+  # or using a free OAuth proxy (instructions below)
 
 media_folder: images
 public_folder: /images
