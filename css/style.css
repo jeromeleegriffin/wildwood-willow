@@ -193,7 +193,7 @@ body {
   flex: 0 0 95px;
   z-index: 2;
   margin-left: auto;
-  margin-right: -4px;
+  margin-right: 10px;
 }
 .hero-image img {
   width: 95px;
