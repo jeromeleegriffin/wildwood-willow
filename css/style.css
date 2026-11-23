@@ -186,7 +186,7 @@ body {
 /* Soft readability veil only beneath hero copy; keep the willow border visible. */
 .hero-text h1,
 .hero-text p {
-  background: rgba(245, 240, 232, 0.96);
+  background: transparent;
   border-radius: 5px;
   box-shadow: 0 0 9px 5px rgba(245, 240, 232, 0.78);
 }
