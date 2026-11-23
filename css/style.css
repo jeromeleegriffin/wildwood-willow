@@ -188,7 +188,7 @@ body {
 .hero-text p {
   background: transparent;
   border-radius: 5px;
-  box-shadow: 0 0 9px 5px rgba(245, 240, 232, 0.78);
+  box-shadow: none;
 }
 .hero p { font-size: 0.48rem; margin: 16px 0 4px; line-height: 1.2; max-width: 112px; }
 .hero-logo {
