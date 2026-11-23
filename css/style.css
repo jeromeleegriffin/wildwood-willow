@@ -164,6 +164,13 @@ body {
   margin: 0;
 }
 .hero h1 span { color: var(--terracotta); }
+/* Soft readability veil only beneath hero copy; keep the willow border visible. */
+.hero-text h1,
+.hero-text p {
+  background: rgba(245, 240, 232, 0.96);
+  border-radius: 5px;
+  box-shadow: 0 0 9px 5px rgba(245, 240, 232, 0.78);
+}
 .hero p { font-size: 0.48rem; margin: 8px 0 4px; line-height: 1.2; max-width: 112px; }
 .hero-logo {
   flex: 0 0 90px;
