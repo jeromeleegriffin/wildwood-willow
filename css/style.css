@@ -33,21 +33,16 @@ body {
 .decor {
   position: absolute;
   object-fit: contain;
-  opacity: 0.4;
+  opacity: 0.5;
   pointer-events: none;
   z-index: 1;
 }
-.decor-tl {
-  width: 40px;
-  height: 50px;
-  top: 5px;
-  left: 0;
-}
-.decor-tr {
-  width: 45px;
-  height: 55px;
-  top: 5px;
-  right: 0;
+.decor-mid {
+  width: 60px;
+  height: 100px;
+  top: 10px;
+  left: 55%;
+  transform: translateX(-50%) rotate(-10deg);
 }
 
 .header {
