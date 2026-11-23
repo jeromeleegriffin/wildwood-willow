@@ -27,7 +27,7 @@ body {
 
 .header {
   background: #f5f0e8;
-  padding: 6px 8px 2px;
+  padding: 6px 6px 2px;
   flex-shrink: 0;
 }
 .header-inner {
@@ -65,11 +65,11 @@ body {
   opacity: 0.5;
 }
 .brand .leaf-under {
-  width: 100%;
-  height: 18px;
-  object-fit: cover;
+  width: calc(100% - 12px);
+  height: 16px;
+  object-fit: contain;
   object-position: center;
-  margin-top: 1px;
+  margin: 2px auto 0;
   display: block;
 }
 .menu { font-size: 1.3rem; color: var(--olive); }
