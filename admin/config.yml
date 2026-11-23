@@ -2,7 +2,7 @@ backend:
   name: github
   repo: jeromeleegriffin/wildwood-willow
   branch: main
-  base_url: https://decap-cms-oauth.netlify.app
+  base_url: https://dawn-recipe-9862wildwood-oauth.jeromeleegriffin.workers.dev
   auth_endpoint: auth
 
 media_folder: images
