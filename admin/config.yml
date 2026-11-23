@@ -45,3 +45,4 @@ collections:
           - { label: Address Line 2, name: address2, widget: string, default: "Ortonville MN" }
           - { label: Hours Line 1, name: hours1, widget: string, default: "Tue-Fri" }
           - { label: Hours Line 2, name: hours2, widget: string, default: "9am-5pm" }
+          - { label: Header Photo, name: header_photo, widget: image }
