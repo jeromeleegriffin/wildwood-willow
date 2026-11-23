@@ -63,44 +63,43 @@ body {
 .hero {
   display: flex;
   align-items: center;
-  padding: 8px 10px;
+  padding: 8px 8px;
   background: #faf8f5;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 }
-.hero-content {
+.hero-text {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
 .hero h1 {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   line-height: 1.05;
   color: var(--olive);
   font-weight: normal;
-  margin-bottom: 2px;
 }
 .hero h1 span { color: var(--terracotta); }
-.hero p { font-size: 0.65rem; margin: 2px 0 6px; line-height: 1.2; }
+.hero p { font-size: 0.62rem; margin: 3px 0 0; line-height: 1.2; }
+.hero-btn {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
 .cta {
-  display: inline-block;
-  background: transparent;
-  color: var(--olive);
-  padding: 4px 10px;
-  border: 1.5px solid var(--olive);
+  background: var(--olive);
+  color: white;
+  padding: 6px 10px;
   border-radius: 16px;
   text-decoration: none;
   font-size: 0.65rem;
   font-weight: bold;
-  align-self: flex-start;
+  white-space: nowrap;
 }
 .hero-image {
-  flex: 0 0 90px;
+  flex: 0 0 85px;
 }
 .hero-image img {
-  width: 90px;
-  height: 90px;
+  width: 85px;
+  height: 85px;
   border-radius: 50%;
   border: 2px solid #e5ddd5;
   object-fit: cover;
