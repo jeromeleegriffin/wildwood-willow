@@ -59,6 +59,7 @@
   </nav>
 
   <div style="text-align:center; padding:8px; font-size:0.6rem;">
+    <a href="cart.html" style="color:#3e4f32; text-decoration:none; margin-right:12px;">Cart</a>
     <a href="/admin/" style="color:#999; text-decoration:none;">Admin</a>
   </div>
 
@@ -86,7 +87,11 @@
         : ['reflexology', 'vibration-therapy', 'foot-detox', 'massage-chair'];
       for (const slug of known) {
         const data = await loadMarkdown(`/content/${folder}/${slug}.md`);
-        if (data && data.featured !== 'false') items.push(data);
+        if (data && data.featured !== 'false') {
+          data.slug = slug;
+          data.folder = folder;
+          items.push(data);
+        }
       }
       return items;
     }
@@ -101,8 +106,9 @@
           ? `<img src="${imgSrc}" alt="" onerror="this.style.background='#f9f6f2'">`
           : `<div class="placeholder">Admin: add photo</div>`;
         const priceHtml = item.price ? `<div class="price">${item.price}</div>` : '';
+        const link = `product.html?p=${item.slug}&type=${item.folder}`;
         return `
-          <div class="card" onclick="location.href='shop.html'">
+          <div class="card" onclick="location.href='${link}'">
             ${imgHtml}
             <h3>${item.title || ''}</h3>
             ${priceHtml}
