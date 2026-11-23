@@ -17,10 +17,10 @@
     </div>
   </header>
 
-  <div class="contact">
-    <div>📞 507-430-1250</div>
-    <div>📍 21b SE 2nd St<br>Ortonville MN</div>
-    <div>🕒 Tue-Fri<br>9am-5pm</div>
+  <div class="contact" id="contact">
+    <div>📞 <span id="phone">507-430-1250</span></div>
+    <div>📍 <span id="address1">21b SE 2nd St</span><br><span id="address2">Ortonville MN</span></div>
+    <div>🕒 <span id="hours1">Tue-Fri</span><br><span id="hours2">9am-5pm</span></div>
   </div>
 
   <section class="hero">
@@ -30,69 +30,19 @@
       <a href="#products" class="cta">SHOP ALL PRODUCTS →</a>
     </div>
     <div class="hero-image">
-      <img src="images/teresa.png" alt="">
+      <img id="header-photo" src="images/teresa.png" alt="">
     </div>
   </section>
 
   <div class="main-content">
     <section id="products" class="section">
       <h2>FEATURED PRODUCTS</h2>
-      <div class="cards">
-        <div class="card">
-          <img src="images/arnica.jpg" alt="">
-          <h3>Arnica Aloe Cream</h3>
-          <p>Soothing relief for sore muscles and minor aches.</p>
-          <span class="arrow">→</span>
-        </div>
-        <div class="card">
-          <img src="images/mental-reset.jpg" alt="">
-          <h3>Mental Reset</h3>
-          <p>Supports clarity, focus, and stress resilience.</p>
-          <span class="arrow">→</span>
-        </div>
-        <div class="card">
-          <img src="images/nerve-pain.jpg" alt="">
-          <h3>Nerve Pain Relaxant</h3>
-          <p>Herbal support for nerve discomfort and relaxation.</p>
-          <span class="arrow">→</span>
-        </div>
-        <div class="card">
-          <img src="images/appetite.jpg" alt="">
-          <h3>Appetite Suppressant</h3>
-          <p>Natural support for cravings and mindful eating.</p>
-          <span class="arrow">→</span>
-        </div>
-      </div>
+      <div class="cards" id="product-cards"></div>
     </section>
 
     <section class="section">
       <h2>FEATURED SERVICES</h2>
-      <div class="cards">
-        <div class="card">
-          <img src="images/reflexology.jpg" alt="">
-          <h3>Reflexology</h3>
-          <p>Restore balance and encourage deep relaxation through targeted foot therapy.</p>
-          <span class="arrow">→</span>
-        </div>
-        <div class="card">
-          <img src="images/vibration.jpg" alt="">
-          <h3>Vibration Therapy</h3>
-          <p>Support circulation, muscle recovery, and overall wellness.</p>
-          <span class="arrow">→</span>
-        </div>
-        <div class="card">
-          <img src="images/foot-detox.jpg" alt="">
-          <h3>Foot Detox</h3>
-          <p>Draw out toxins and restore balance with a relaxing ionic foot bath.</p>
-          <span class="arrow">→</span>
-        </div>
-        <div class="card">
-          <img src="images/massage-chair.jpg" alt="">
-          <h3>Massage Chair</h3>
-          <p>Unwind with therapeutic massage in the comfort of our private relaxation area.</p>
-          <span class="arrow">→</span>
-        </div>
-      </div>
+      <div class="cards" id="service-cards"></div>
     </section>
   </div>
 
@@ -103,5 +53,71 @@
     <div><span>🌿</span>TOPICALS</div>
     <div><span>🌱</span>SERVICES</div>
   </nav>
+
+  <script>
+    async function loadMarkdown(path) {
+      try {
+        const res = await fetch(path);
+        if (!res.ok) return null;
+        const text = await res.text();
+        const match = text.match(/---\n([\s\S]*?)\n---/);
+        if (!match) return null;
+        const data = {};
+        match[1].split('\n').forEach(line => {
+          const [key, ...rest] = line.split(':');
+          if (key && rest.length) data[key.trim()] = rest.join(':').trim();
+        });
+        return data;
+      } catch (e) { return null; }
+    }
+
+    async function loadFolder(folder) {
+      const items = [];
+      const known = folder === 'products' 
+        ? ['arnica-aloe-cream', 'mental-reset', 'nerve-pain-relaxant', 'appetite-suppressant']
+        : ['reflexology', 'vibration-therapy', 'foot-detox', 'massage-chair'];
+      for (const slug of known) {
+        const data = await loadMarkdown(`/content/${folder}/${slug}.md`);
+        if (data && data.featured !== 'false') items.push(data);
+      }
+      return items;
+    }
+
+    function renderCards(items, containerId) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = items.map(item => `
+        <div class="card">
+          <img src="${item.image || ''}" alt="" onerror="this.style.background='#f9f6f2'">
+          <h3>${item.title || ''}</h3>
+          <p>${item.description || ''}</p>
+          <span class="arrow">→</span>
+        </div>
+      `).join('');
+    }
+
+    async function init() {
+      const header = await loadMarkdown('/content/settings/header.md');
+      if (header && header.header_photo) {
+        document.getElementById('header-photo').src = header.header_photo;
+      }
+
+      const contact = await loadMarkdown('/content/settings/contact.md');
+      if (contact) {
+        if (contact.phone) document.getElementById('phone').textContent = contact.phone;
+        if (contact.address1) document.getElementById('address1').textContent = contact.address1;
+        if (contact.address2) document.getElementById('address2').textContent = contact.address2;
+        if (contact.hours1) document.getElementById('hours1').textContent = contact.hours1;
+        if (contact.hours2) document.getElementById('hours2').textContent = contact.hours2;
+      }
+
+      const products = await loadFolder('products');
+      renderCards(products, 'product-cards');
+
+      const services = await loadFolder('services');
+      renderCards(services, 'service-cards');
+    }
+
+    init();
+  </script>
 </body>
 </html>
