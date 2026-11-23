@@ -151,9 +151,10 @@ body {
   opacity: 0.6;
 }
 .hero-text {
-  flex: 0 0 100px;
+  flex: 0 0 118px;
   z-index: 2;
-  padding-top: 6px;
+  padding-top: 10px;
+  margin-left: 22px;
 }
 .hero h1 {
   font-size: 0.85rem;
@@ -163,15 +164,15 @@ body {
   margin: 0;
 }
 .hero h1 span { color: var(--terracotta); }
-.hero p { font-size: 0.48rem; margin: 2px 0 4px; line-height: 1.1; }
+.hero p { font-size: 0.48rem; margin: 8px 0 4px; line-height: 1.2; max-width: 112px; }
 .hero-logo {
-  flex: 0 0 85px;
+  flex: 0 0 90px;
   z-index: 2;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  margin-left: -10px;
-  margin-top: -2px;
+  margin-left: 2px;
+  margin-top: 18px;
 }
 .hero-logo img {
   width: 80px;
@@ -219,7 +220,12 @@ body {
   font-size: 0.75rem;
   letter-spacing: 1px;
   color: var(--olive);
-  margin-bottom: 4px;
+  margin: 0 auto 4px;
+  padding: 1px 9px 0;
+  background: rgba(245, 240, 232, 0.94);
+  border-radius: 4px;
+  width: max-content;
+  max-width: 100%;
   flex-shrink: 0;
 }
 .section h2::after {
