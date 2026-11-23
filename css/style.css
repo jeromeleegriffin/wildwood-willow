@@ -75,19 +75,26 @@ body {
   gap: 8px;
   flex-shrink: 0;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 .leaf {
   position: absolute;
-  width: 55px;
-  height: 55px;
+  width: 65px;
+  height: 65px;
   object-fit: contain;
-  opacity: 0.45;
+  opacity: 0.55;
   pointer-events: none;
+  z-index: 0;
 }
-.leaf-tl { top: -8px; left: -8px; }
-.leaf-tr { top: -4px; right: -6px; }
-.leaf-br { bottom: -10px; right: 8px; }
+.leaf-left { top: 5px; left: -15px; transform: rotate(-10deg); }
+.leaf-right { top: 10px; right: -10px; transform: rotate(15deg); }
+.underline {
+  width: 70px;
+  height: 18px;
+  object-fit: contain;
+  margin: 2px 0 4px;
+  opacity: 0.7;
+}
 .hero-text {
   flex: 1;
   z-index: 1;
@@ -99,7 +106,7 @@ body {
   font-weight: normal;
 }
 .hero h1 span { color: var(--terracotta); }
-.hero p { font-size: 0.62rem; margin: 4px 0 7px; line-height: 1.25; }
+.hero p { font-size: 0.62rem; margin: 3px 0 7px; line-height: 1.25; }
 .cta {
   display: inline-block;
   background: var(--terracotta);
@@ -111,16 +118,18 @@ body {
   font-weight: bold;
 }
 .hero-image {
-  flex: 0 0 110px;
+  flex: 0 0 115px;
   z-index: 1;
+  position: relative;
 }
 .hero-image img {
-  width: 110px;
-  height: 130px;
-  border-radius: 55px 55px 60px 60px;
+  width: 115px;
+  height: 140px;
+  border-radius: 60px 60px 70px 70px;
   border: 2px solid #e5ddd5;
   object-fit: cover;
-  object-position: center top;
+  object-position: center 20%;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
 }
 
 .main-content {
@@ -210,9 +219,3 @@ body {
 }
 .categories div { text-align: center; }
 .categories span { font-size: 0.95rem; display: block; margin-bottom: 1px; }
-
-@media (max-height: 700px) {
-  .hero-image img { width: 95px; height: 110px; }
-  .card img { height: 40px; }
-  .hero h1 { font-size: 1.1rem; }
-}
