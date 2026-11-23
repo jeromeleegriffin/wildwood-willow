@@ -115,8 +115,8 @@ body {
   gap: 8px;
 }
 .icon-circle {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   background: white;
   border-radius: 50%;
   display: flex;
@@ -125,9 +125,10 @@ body {
   flex-shrink: 0;
 }
 .icon-text {
-  font-size: 14px;
-  color: var(--olive);
+  font-size: 18px;
+  color: #3e4f32;
   font-weight: bold;
+  line-height: 1;
 }
 
 .hero {
