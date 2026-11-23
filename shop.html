@@ -8,19 +8,22 @@
   <style>
     body { overflow: hidden; height: 100vh; }
     .shop-wrap { display: flex; flex-direction: column; height: 100vh; }
-    .shop-header { padding: 8px 10px; background: #faf8f5; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
-    .shop-header a { color: var(--olive); text-decoration: none; font-size: 0.75rem; }
-    .shop-header h1 { font-size: 1rem; color: var(--olive); margin: 0; }
-    .tabs { display: flex; gap: 4px; padding: 6px 8px; background: #faf8f5; overflow-x: auto; flex-shrink: 0; }
-    .tabs button { border: 1px solid #e8e0d8; background: white; border-radius: 12px; padding: 4px 10px; font-size: 0.7rem; color: var(--olive); }
-    .tabs button.active { background: var(--olive); color: white; }
-    .shop-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; align-content: start; overflow: hidden; }
-    .shop-card { background: white; border: 1px solid #e8e0d8; border-radius: 8px; padding: 6px; text-align: center; }
-    .shop-card img { width: 100%; height: 80px; object-fit: cover; border-radius: 6px; background: #f9f6f2; }
-    .shop-card h3 { font-size: 0.75rem; margin: 4px 0 1px; }
-    .shop-card p { font-size: 0.6rem; color: #555; }
-    .pager { display: flex; justify-content: center; gap: 6px; padding: 6px; background: #faf8f5; flex-shrink: 0; }
-    .pager button { border: 1px solid #e8e0d8; background: white; border-radius: 6px; padding: 4px 10px; font-size: 0.7rem; }
+    .shop-header { padding: 6px 10px; background: #faf8f5; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
+    .shop-header a { color: var(--olive); text-decoration: none; font-size: 0.7rem; }
+    .shop-header h1 { font-size: 0.95rem; color: var(--olive); margin: 0; }
+    .mode-switch { display: flex; gap: 4px; padding: 4px 8px; background: #faf8f5; flex-shrink: 0; }
+    .mode-switch button { flex: 1; border: 1px solid #e8e0d8; background: white; border-radius: 8px; padding: 4px; font-size: 0.7rem; color: var(--olive); }
+    .mode-switch button.active { background: var(--olive); color: white; }
+    .tabs { display: flex; gap: 3px; padding: 4px 6px; background: #faf8f5; overflow-x: auto; flex-shrink: 0; }
+    .tabs button { border: 1px solid #e8e0d8; background: white; border-radius: 10px; padding: 3px 8px; font-size: 0.65rem; color: var(--olive); white-space: nowrap; }
+    .tabs button.active { background: var(--terracotta); color: white; }
+    .shop-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; padding: 6px; align-content: start; overflow: hidden; }
+    .shop-card { background: white; border: 1px solid #e8e0d8; border-radius: 6px; padding: 4px; text-align: center; }
+    .shop-card img { width: 100%; height: 48px; object-fit: cover; border-radius: 4px; background: #f9f6f2; }
+    .shop-card h3 { font-size: 0.6rem; margin: 2px 0 1px; line-height: 1.1; }
+    .shop-card p { font-size: 0.5rem; color: #555; line-height: 1.1; }
+    .pager { display: flex; justify-content: center; gap: 6px; padding: 4px; background: #faf8f5; flex-shrink: 0; }
+    .pager button { border: 1px solid #e8e0d8; background: white; border-radius: 6px; padding: 3px 8px; font-size: 0.65rem; }
   </style>
 </head>
 <body>
@@ -30,42 +33,67 @@
       <h1>Shop</h1>
       <span></span>
     </div>
+    <div class="mode-switch">
+      <button id="btn-products" class="active" onclick="setMode('products')">Products</button>
+      <button id="btn-services" onclick="setMode('services')">Services</button>
+    </div>
     <div class="tabs" id="tabs"></div>
     <div class="shop-grid" id="shop-grid"></div>
     <div class="pager" id="pager"></div>
   </div>
 
   <script>
-    const allProducts = [];
-    const categories = ['All', 'Capsules', 'Tinctures', 'Teas', 'Topicals', 'Home'];
+    const data = { products: [], services: [] };
+    const productCats = ['All', 'Capsules', 'Tinctures', 'Teas', 'Topicals', 'Home'];
+    let mode = 'products';
     let currentCategory = 'All';
     let currentPage = 1;
-    const perPage = 4;
+    const perPage = 8;
 
-    async function loadAll() {
-      const slugs = ['arnica-aloe-cream', 'mental-reset', 'nerve-pain-relaxant', 'appetite-suppressant'];
+    async function loadItems(folder, slugs) {
+      const items = [];
       for (const slug of slugs) {
         try {
-          const res = await fetch(`/content/products/${slug}.md`);
+          const res = await fetch(`/content/${folder}/${slug}.md`);
           if (!res.ok) continue;
           const text = await res.text();
           const match = text.match(/---\n([\s\S]*?)\n---/);
           if (!match) continue;
-          const data = {};
+          const d = {};
           match[1].split('\n').forEach(line => {
             const [key, ...rest] = line.split(':');
-            if (key && rest.length) data[key.trim()] = rest.join(':').trim();
+            if (key && rest.length) d[key.trim()] = rest.join(':').trim();
           });
-          allProducts.push(data);
+          items.push(d);
         } catch (e) {}
       }
+      return items;
+    }
+
+    async function init() {
+      data.products = await loadItems('products', ['arnica-aloe-cream', 'mental-reset', 'nerve-pain-relaxant', 'appetite-suppressant']);
+      data.services = await loadItems('services', ['reflexology', 'vibration-therapy', 'foot-detox', 'massage-chair']);
+      renderTabs();
+      render();
+    }
+
+    function setMode(m) {
+      mode = m;
+      currentCategory = 'All';
+      currentPage = 1;
+      document.getElementById('btn-products').classList.toggle('active', m === 'products');
+      document.getElementById('btn-services').classList.toggle('active', m === 'services');
       renderTabs();
       render();
     }
 
     function renderTabs() {
       const tabs = document.getElementById('tabs');
-      tabs.innerHTML = categories.map(cat => 
+      if (mode === 'services') {
+        tabs.innerHTML = '';
+        return;
+      }
+      tabs.innerHTML = productCats.map(cat => 
         `<button class="${cat === currentCategory ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</button>`
       ).join('');
     }
@@ -78,12 +106,13 @@
     }
 
     function render() {
-      const filtered = currentCategory === 'All' 
-        ? allProducts 
-        : allProducts.filter(p => p.category === currentCategory);
-      const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+      let items = mode === 'products' ? data.products : data.services;
+      if (mode === 'products' && currentCategory !== 'All') {
+        items = items.filter(p => p.category === currentCategory);
+      }
+      const totalPages = Math.max(1, Math.ceil(items.length / perPage));
       const start = (currentPage - 1) * perPage;
-      const pageItems = filtered.slice(start, start + perPage);
+      const pageItems = items.slice(start, start + perPage);
 
       const grid = document.getElementById('shop-grid');
       grid.innerHTML = pageItems.map(p => `
@@ -92,12 +121,12 @@
           <h3>${p.title || ''}</h3>
           <p>${p.description || ''}</p>
         </div>
-      `).join('') || '<p style="grid-column:1/-1;text-align:center;color:#888;font-size:0.8rem;">No products in this category yet.</p>';
+      `).join('') || '<p style="grid-column:1/-1;text-align:center;color:#888;font-size:0.7rem;">None yet.</p>';
 
       const pager = document.getElementById('pager');
       pager.innerHTML = totalPages > 1 ? `
         <button onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>Prev</button>
-        <span style="font-size:0.7rem;align-self:center;">${currentPage} / ${totalPages}</span>
+        <span style="font-size:0.65rem;align-self:center;">${currentPage}/${totalPages}</span>
         <button onclick="changePage(1)" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
       ` : '';
     }
@@ -107,7 +136,7 @@
       render();
     }
 
-    loadAll();
+    init();
   </script>
 </body>
 </html>
