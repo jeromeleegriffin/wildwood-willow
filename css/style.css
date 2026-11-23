@@ -171,7 +171,7 @@ body {
   border-radius: 5px;
   box-shadow: 0 0 9px 5px rgba(245, 240, 232, 0.78);
 }
-.hero p { font-size: 0.48rem; margin: 8px 0 4px; line-height: 1.2; max-width: 112px; }
+.hero p { font-size: 0.48rem; margin: 22px 0 4px; line-height: 1.2; max-width: 112px; }
 .hero-logo {
   flex: 0 0 90px;
   z-index: 2;
