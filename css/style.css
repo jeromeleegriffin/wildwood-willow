@@ -27,7 +27,17 @@ body {
 }
 
 .hero-frame {
-  display: none;
+  position: fixed;
+  top: 55px;
+  left: 50%;
+  transform: translateX(-50%) scale(1.6);
+  width: 420px;
+  height: calc(100vh - 55px);
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .header {
@@ -111,7 +121,7 @@ body {
   display: flex;
   align-items: flex-start;
   padding: 2px 4px;
-  background: #f5f0e8;
+  background: transparent;
   gap: 0;
   flex-shrink: 0;
   position: relative;
@@ -181,7 +191,7 @@ body {
   overflow: hidden;
   padding: 0 3px;
   min-height: 0;
-  background: #f5f0e8;
+  background: transparent;
   position: relative;
   z-index: 2;
 }
