@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart - Wildwood & Willow</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .cart-page { padding: 12px; max-width: 420px; margin: 0 auto; }
+    .cart-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .cart-item img { width: 60px; height: 60px; object-fit: contain; background: #faf8f5; border-radius: 4px; }
+    .cart-item .info { flex: 1; }
+    .cart-item .title { font-weight: bold; font-size: 0.9rem; }
+    .cart-item .price { color: #c17a4a; font-size: 0.85rem; }
+    .checkout-btn { background: #c17a4a; color: white; border: none; padding: 12px; border-radius: 20px; width: 100%; margin-top: 16px; font-size: 1rem; }
+    .empty { text-align: center; padding: 40px 0; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="cart-page">
+    <a href="index.html" style="color:#3e4f32; text-decoration:none;">← Continue Shopping</a>
+    <h2 style="color:#3e4f32; margin: 12px 0;">Your Cart</h2>
+    <div id="cart-items"></div>
+    <div id="total" style="text-align:right; margin-top:12px; font-weight:bold;"></div>
+    <button class="checkout-btn" onclick="alert('Checkout will connect to a payment app later (Stripe, Square, etc.)')">Checkout</button>
+  </div>
+
+  <script>
+    function loadCart() {
+      const cart = JSON.parse(localStorage.getItem('ww-cart') || '[]');
+      const container = document.getElementById('cart-items');
+      if (!cart.length) {
+        container.innerHTML = '<div class="empty">Your cart is empty</div>';
+        document.getElementById('total').textContent = '';
+        return;
+      }
+      container.innerHTML = cart.map(item => `
+        <div class="cart-item">
+          <img src="${item.image || ''}" alt="">
+          <div class="info">
+            <div class="title">${item.title}</div>
+            <div class="price">${item.price} × ${item.qty || 1}</div>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('total').textContent = cart.length + ' item(s)';
+    }
+    loadCart();
+  </script>
+</body>
+</html>
