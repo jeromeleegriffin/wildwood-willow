@@ -93,14 +93,20 @@
 
     function renderCards(items, containerId) {
       const container = document.getElementById(containerId);
-      container.innerHTML = items.map(item => `
-        <div class="card" onclick="location.href='shop.html'">
-          <img src="${item.image || ''}" alt="" onerror="this.style.background='#f9f6f2'">
-          <h3>${item.title || ''}</h3>
-          <p>${item.description || ''}</p>
-          <span class="arrow">→</span>
-        </div>
-      `).join('');
+      container.innerHTML = items.map(item => {
+        const hasImage = item.image && item.image.trim() !== '';
+        const imgHtml = hasImage 
+          ? `<img src="${item.image}" alt="" onerror="this.style.background='#f9f6f2'">`
+          : `<div class="placeholder">Admin: add photo</div>`;
+        return `
+          <div class="card" onclick="location.href='shop.html'">
+            ${imgHtml}
+            <h3>${item.title || ''}</h3>
+            <p>${item.description || ''}</p>
+            <span class="arrow">→</span>
+          </div>
+        `;
+      }).join('');
     }
 
     async function init() {
