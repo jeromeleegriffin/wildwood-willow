@@ -27,7 +27,7 @@ body {
 
 .header {
   background: #faf8f5;
-  padding: 8px 12px;
+  padding: 6px 10px;
   flex-shrink: 0;
 }
 .header-inner {
@@ -35,17 +35,11 @@ body {
   justify-content: space-between;
   align-items: center;
 }
-.logo {
+.logo-img {
   width: 42px;
   height: 42px;
-  border: 1.5px solid var(--olive);
+  object-fit: contain;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  color: var(--olive);
-  font-weight: bold;
 }
 .brand .name { 
   font-size: 1.05rem; 
@@ -79,7 +73,19 @@ body {
   background: #faf8f5;
   gap: 10px;
   flex-shrink: 0;
+  position: relative;
 }
+.leaf {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  opacity: 0.6;
+  pointer-events: none;
+}
+.leaf-tl { top: 4px; left: 4px; }
+.leaf-tr { top: 4px; right: 4px; }
+.leaf-br { bottom: 4px; right: 4px; }
 .hero-text {
   flex: 1;
 }
