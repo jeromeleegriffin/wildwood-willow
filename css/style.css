@@ -27,7 +27,7 @@ body {
 
 .header {
   background: #f5f0e8;
-  padding: 4px 8px 4px;
+  padding: 6px 12px 4px;
   flex-shrink: 0;
 }
 .header-inner {
@@ -35,47 +35,40 @@ body {
   justify-content: space-between;
   align-items: center;
 }
-.logo-img {
-  width: 72px;
-  height: 72px;
-  object-fit: contain;
-}
 .brand {
   text-align: center;
   flex: 1;
-  margin: 0 4px;
 }
 .brand .name { 
-  font-size: 1.05rem; 
+  font-size: 0.95rem; 
   color: var(--olive); 
   font-weight: bold; 
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   line-height: 1;
 }
 .brand .sub {
-  font-size: 0.48rem;
-  letter-spacing: 2.5px;
+  font-size: 0.45rem;
+  letter-spacing: 2px;
   color: var(--olive);
   margin-top: 1px;
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 4px;
 }
 .brand .sub::before,
 .brand .sub::after {
   content: "";
-  width: 22px;
+  width: 18px;
   height: 1px;
   background: var(--olive);
   opacity: 0.5;
 }
 .brand .leaf-under {
   width: 100%;
-  height: 20px;
+  max-width: 200px;
+  height: 16px;
   object-fit: contain;
-  object-position: center;
   margin-top: 2px;
   display: block;
   margin-left: auto;
@@ -98,74 +91,92 @@ body {
 .hero {
   display: flex;
   align-items: center;
-  padding: 8px 10px;
+  padding: 6px 8px;
   background: #f5f0e8;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
   position: relative;
-  min-height: 160px;
+  min-height: 150px;
 }
 .leaf {
   position: absolute;
   object-fit: contain;
-  opacity: 0.55;
+  opacity: 0.4;
   pointer-events: none;
   z-index: 0;
 }
-.leaf-left { 
-  width: 70px; 
-  height: 90px; 
-  top: 15px; 
-  left: -8px; 
+.leaf-tl { 
+  width: 45px; 
+  height: 55px; 
+  top: 8px; 
+  left: -2px; 
 }
-.leaf-right { 
-  width: 65px; 
-  height: 80px; 
-  top: 25px; 
-  right: -5px; 
+.leaf-bl { 
+  width: 40px; 
+  height: 50px; 
+  bottom: 10px; 
+  left: 30px; 
+  opacity: 0.3;
+}
+.leaf-tr { 
+  width: 50px; 
+  height: 60px; 
+  top: 10px; 
+  right: -2px; 
 }
 .underline {
-  width: 55px;
-  height: 12px;
+  width: 48px;
+  height: 10px;
   object-fit: contain;
-  margin: 2px 0 4px;
-  opacity: 0.7;
+  margin: 1px 0 3px;
+  opacity: 0.6;
 }
 .hero-text {
   flex: 1;
   z-index: 1;
+  max-width: 140px;
 }
 .hero h1 {
-  font-size: 1.15rem;
-  line-height: 1.02;
+  font-size: 1rem;
+  line-height: 1;
   color: var(--olive);
   font-weight: normal;
   margin: 0;
 }
 .hero h1 span { color: var(--terracotta); }
-.hero p { font-size: 0.6rem; margin: 4px 0 7px; line-height: 1.25; }
+.hero p { font-size: 0.55rem; margin: 3px 0 6px; line-height: 1.2; }
 .cta {
   display: inline-block;
   background: var(--terracotta);
   color: white;
-  padding: 5px 11px;
-  border-radius: 16px;
+  padding: 4px 9px;
+  border-radius: 14px;
   text-decoration: none;
-  font-size: 0.58rem;
+  font-size: 0.52rem;
   font-weight: bold;
 }
+.hero-logo {
+  flex: 0 0 55px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-logo img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
 .hero-image {
-  flex: 0 0 125px;
+  flex: 0 0 110px;
   z-index: 1;
 }
 .hero-image img {
-  width: 125px;
-  height: 155px;
+  width: 110px;
+  height: 140px;
   object-fit: contain;
   object-position: center;
   background: transparent;
-  border-radius: 0;
-  border: none;
 }
 
 .main-content {
