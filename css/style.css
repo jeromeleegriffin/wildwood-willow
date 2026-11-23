@@ -99,14 +99,14 @@ body {
   z-index: 1;
 }
 .hero h1 {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   line-height: 1.02;
   color: var(--olive);
   font-weight: normal;
   margin: 0;
 }
 .hero h1 span { color: var(--terracotta); }
-.hero p { font-size: 0.62rem; margin: 4px 0 7px; line-height: 1.25; }
+.hero p { font-size: 0.6rem; margin: 4px 0 7px; line-height: 1.25; }
 .cta {
   display: inline-block;
   background: var(--terracotta);
@@ -114,16 +114,16 @@ body {
   padding: 5px 11px;
   border-radius: 16px;
   text-decoration: none;
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: bold;
 }
 .hero-image {
-  flex: 0 0 130px;
+  flex: 0 0 125px;
   z-index: 1;
 }
 .hero-image img {
-  width: 130px;
-  height: 160px;
+  width: 125px;
+  height: 155px;
   object-fit: contain;
   object-position: center;
   background: transparent;
@@ -149,7 +149,7 @@ body {
   min-height: 0;
 }
 .section h2 {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   letter-spacing: 1px;
   color: var(--olive);
   margin-bottom: 4px;
@@ -181,18 +181,19 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  cursor: pointer;
 }
 .card img {
   width: 100%;
-  height: 52px;
+  height: 50px;
   object-fit: contain;
   object-position: center;
   margin-bottom: 2px;
   background: #faf8f5;
   border-radius: 3px;
 }
-.card h3 { font-size: 0.6rem; margin-bottom: 1px; line-height: 1.1; font-weight: bold; }
-.card p { font-size: 0.52rem; color: #555; line-height: 1.1; flex: 1; padding-right: 2px; word-break: break-word; }
+.card h3 { font-size: 0.58rem; margin-bottom: 1px; line-height: 1.1; font-weight: bold; }
+.card p { font-size: 0.5rem; color: #555; line-height: 1.15; flex: 1; padding-right: 2px; word-break: break-word; }
 .arrow {
   position: absolute;
   bottom: 3px;
