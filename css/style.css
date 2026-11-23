@@ -30,13 +30,13 @@ body {
   position: fixed;
   top: 60px;
   left: 50%;
-  transform: translateX(-50%) scale(1.4);
+  transform: translateX(-50%) scale(1.5);
   width: 420px;
   height: calc(100vh - 60px);
   object-fit: cover;
   object-position: center;
   z-index: 0;
-  opacity: 0.75;
+  opacity: 0.7;
   pointer-events: none;
 }
 
@@ -120,7 +120,7 @@ body {
 .hero {
   display: flex;
   align-items: flex-start;
-  padding: 2px 4px 2px 40px;
+  padding: 2px 4px 2px 50px;
   background: transparent;
   gap: 0;
   flex-shrink: 0;
@@ -140,45 +140,45 @@ body {
   opacity: 0.6;
 }
 .hero-text {
-  flex: 0 0 85px;
+  flex: 0 0 80px;
   z-index: 2;
   padding-top: 6px;
 }
 .hero h1 {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   line-height: 1;
   color: var(--olive);
   font-weight: normal;
   margin: 0;
 }
 .hero h1 span { color: var(--terracotta); }
-.hero p { font-size: 0.42rem; margin: 2px 0 4px; line-height: 1.1; }
+.hero p { font-size: 0.4rem; margin: 2px 0 4px; line-height: 1.1; }
 .hero-logo {
-  flex: 0 0 65px;
+  flex: 0 0 60px;
   z-index: 2;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  margin-left: 10px;
+  margin-left: 12px;
   margin-top: -2px;
 }
 .hero-logo img {
-  width: 62px;
-  height: 62px;
+  width: 58px;
+  height: 58px;
   object-fit: contain;
 }
 .hero-willow {
   display: none;
 }
 .hero-image {
-  flex: 0 0 80px;
+  flex: 0 0 75px;
   z-index: 2;
   margin-left: auto;
   margin-right: -4px;
 }
 .hero-image img {
-  width: 80px;
-  height: 110px;
+  width: 75px;
+  height: 105px;
   object-fit: contain;
   object-position: center;
   background: transparent;
@@ -189,7 +189,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 0 5px 0 50px;
+  padding: 0 5px 0 60px;
   min-height: 0;
   background: transparent;
   position: relative;
@@ -205,7 +205,7 @@ body {
   min-height: 0;
 }
 .section h2 {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   letter-spacing: 1px;
   color: var(--olive);
   margin-bottom: 4px;
@@ -241,7 +241,7 @@ body {
 }
 .card img {
   width: 100%;
-  height: 45px;
+  height: 42px;
   object-fit: contain;
   object-position: center;
   margin-bottom: 2px;
@@ -250,21 +250,21 @@ body {
 }
 .placeholder {
   width: 100%;
-  height: 45px;
+  height: 42px;
   background: #f0ebe4;
   border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.42rem;
+  font-size: 0.4rem;
   color: #888;
   text-align: center;
   margin-bottom: 2px;
   padding: 2px;
 }
-.card h3 { font-size: 0.52rem; margin-bottom: 1px; line-height: 1.1; font-weight: bold; }
-.price { font-size: 0.48rem; color: var(--terracotta); font-weight: bold; margin-bottom: 1px; }
-.card p { font-size: 0.44rem; color: #555; line-height: 1.15; flex: 1; padding-right: 2px; word-break: break-word; }
+.card h3 { font-size: 0.5rem; margin-bottom: 1px; line-height: 1.1; font-weight: bold; }
+.price { font-size: 0.46rem; color: var(--terracotta); font-weight: bold; margin-bottom: 1px; }
+.card p { font-size: 0.42rem; color: #555; line-height: 1.15; flex: 1; padding-right: 2px; word-break: break-word; }
 .arrow {
   position: absolute;
   bottom: 2px;
