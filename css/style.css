@@ -235,7 +235,7 @@ body {
 }
 
 .section {
-  padding: 4px 2px;
+  padding: 2px 2px;
   text-align: center;
   flex: 1;
   display: flex;
@@ -272,7 +272,7 @@ body {
 }
 .card {
   background: var(--card-bg);
-  min-height: 160px;
+  
   border: 1px solid #e8e0d8;
   border-radius: 6px;
   padding: 6px 6px 14px 6px;
