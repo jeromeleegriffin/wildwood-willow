@@ -1,8 +1,8 @@
 ---
 title: Arnica Aloe Cream
-price: 
+price: $8.00
 description: Soothing relief for sore muscles and minor aches.
 featured: true
 category: Topicals
-image:
+image: /images/87116.jpg
 ---
