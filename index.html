@@ -94,7 +94,7 @@
     function renderCards(items, containerId) {
       const container = document.getElementById(containerId);
       container.innerHTML = items.map(item => `
-        <div class="card">
+        <div class="card" onclick="location.href='shop.html'">
           <img src="${item.image || ''}" alt="" onerror="this.style.background='#f9f6f2'">
           <h3>${item.title || ''}</h3>
           <p>${item.description || ''}</p>
