@@ -73,10 +73,10 @@ body {
 }
 .brand .leaf-under {
   width: 100%;
-  max-width: 180px;
-  height: 18px;
+  height: 20px;
   object-fit: contain;
-  margin-top: 3px;
+  object-position: center;
+  margin-top: 2px;
   display: block;
   margin-left: auto;
   margin-right: auto;
