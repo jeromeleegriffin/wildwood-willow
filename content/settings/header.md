@@ -1,3 +1,3 @@
 ---
-header_photo: /images/86981.jpg
+header_photo: /images/header-photo.jpg
 ---
