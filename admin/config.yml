@@ -19,7 +19,18 @@ collections:
       - { label: Price, name: price, widget: string }
       - { label: Description, name: description, widget: text }
       - { label: Featured, name: featured, widget: boolean, default: false }
-      - { label: Category, name: category, widget: select, options: ["Capsules", "Tinctures", "Teas", "Topicals", "Home", "Services"] }
+      - { label: Category, name: category, widget: select, options: ["Capsules", "Tinctures", "Teas", "Topicals", "Home"] }
+      - { label: Image, name: image, widget: image }
+
+  - name: services
+    label: Services
+    folder: content/services
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Description, name: description, widget: text }
+      - { label: Featured, name: featured, widget: boolean, default: true }
       - { label: Image, name: image, widget: image }
 
   - name: settings
