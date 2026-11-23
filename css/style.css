@@ -101,7 +101,7 @@ body {
   justify-content: space-around;
   align-items: center;
   text-align: left;
-  padding: 6px 8px;
+  padding: 8px 10px;
   font-size: 0.58rem;
   line-height: 1.15;
   flex-shrink: 0;
@@ -112,14 +112,23 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+.icon-circle {
+  width: 28px;
+  height: 28px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 .contact-icon {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   object-fit: contain;
-  flex-shrink: 0;
-  filter: brightness(0) invert(1);
+  filter: none;
 }
 
 .hero {
