@@ -178,7 +178,7 @@ body {
   line-height: 1;
   color: var(--olive);
   font-weight: normal;
-  margin: 13px 0 0 8px;
+  margin: 32px 0 0 8px;
   width: max-content;
   max-width: 100%;
 }
@@ -190,7 +190,7 @@ body {
   border-radius: 5px;
   box-shadow: 0 0 9px 5px rgba(245, 240, 232, 0.78);
 }
-.hero p { font-size: 0.48rem; margin: 22px 0 4px; line-height: 1.2; max-width: 112px; }
+.hero p { font-size: 0.48rem; margin: 16px 0 4px; line-height: 1.2; max-width: 112px; }
 .hero-logo {
   flex: 0 0 90px;
   z-index: 2;
