@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product - Wildwood & Willow</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .product-page { padding: 12px; max-width: 420px; margin: 0 auto; }
+    .product-page img { width: 100%; max-height: 280px; object-fit: contain; background: #faf8f5; border-radius: 8px; }
+    .product-page h1 { font-size: 1.4rem; color: #3e4f32; margin: 12px 0 4px; }
+    .product-page .price { font-size: 1.2rem; color: #c17a4a; font-weight: bold; margin-bottom: 8px; }
+    .product-page p { font-size: 0.9rem; line-height: 1.4; margin-bottom: 16px; }
+    .add-btn { background: #c17a4a; color: white; border: none; padding: 12px 24px; border-radius: 20px; font-size: 1rem; width: 100%; cursor: pointer; }
+    .back { display: inline-block; margin-bottom: 10px; color: #3e4f32; text-decoration: none; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <div class="product-page">
+    <a href="index.html" class="back">← Back</a>
+    <img id="product-img" src="" alt="">
+    <h1 id="product-title"></h1>
+    <div class="price" id="product-price"></div>
+    <p id="product-desc"></p>
+    <button class="add-btn" onclick="addToCart()">Add to Cart</button>
+    <div id="cart-msg" style="text-align:center; margin-top:8px; font-size:0.8rem; color:#3e4f32;"></div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const slug = params.get('p');
+    const folder = params.get('type') || 'products';
+
+    async function loadProduct() {
+      if (!slug) return;
+      const res = await fetch(`/content/${folder}/${slug}.md?t=` + Date.now());
+      if (!res.ok) return;
+      const text = await res.text();
+      const match = text.match(/---\n([\s\S]*?)\n---/);
+      if (!match) return;
+      const data = {};
+      match[1].split('\n').forEach(line => {
+        const [key, ...rest] = line.split(':');
+        if (key && rest.length) data[key.trim()] = rest.join(':').trim();
+      });
+      document.getElementById('product-title').textContent = data.title || '';
+      document.getElementById('product-price').textContent = data.price || '';
+      document.getElementById('product-desc').textContent = data.description || '';
+      if (data.image) document.getElementById('product-img').src = data.image;
+      document.title = (data.title || 'Product') + ' - Wildwood & Willow';
+      window.currentProduct = data;
+      window.currentSlug = slug;
+    }
+
+    function addToCart() {
+      if (!window.currentProduct) return;
+      let cart = JSON.parse(localStorage.getItem('ww-cart') || '[]');
+      const existing = cart.find(i => i.slug === window.currentSlug);
+      if (existing) {
+        existing.qty = (existing.qty || 1) + 1;
+      } else {
+        cart.push({
+          slug: window.currentSlug,
+          title: window.currentProduct.title,
+          price: window.currentProduct.price,
+          image: window.currentProduct.image,
+          qty: 1
+        });
+      }
+      localStorage.setItem('ww-cart', JSON.stringify(cart));
+      document.getElementById('cart-msg').textContent = 'Added to cart';
+      setTimeout(() => document.getElementById('cart-msg').textContent = '', 1500);
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>
