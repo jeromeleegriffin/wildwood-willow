@@ -180,7 +180,8 @@ body {
 .hero-image {
   flex: 0 0 90px;
   z-index: 1;
-  margin-left: auto;
+  margin-left: 15px;
+  margin-right: -8px;
 }
 .hero-image img {
   width: 90px;
