@@ -27,14 +27,13 @@ body {
 
 .header {
   background: #f5f0e8;
-  padding: 4px 0 0;
+  padding: 4px 6px 0;
   flex-shrink: 0;
 }
 .header-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 6px;
 }
 .brand {
   text-align: center;
@@ -66,14 +65,10 @@ body {
   opacity: 0.5;
 }
 .header-willow {
-  width: 100vw;
-  max-width: 420px;
-  height: 18px;
-  object-fit: fill;
-  object-position: center;
+  width: 100%;
+  height: auto;
   display: block;
-  margin: 1px 0 0;
-  padding: 0;
+  margin: 2px 0 0;
 }
 .menu { font-size: 1.2rem; color: var(--olive); }
 
