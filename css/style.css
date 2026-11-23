@@ -81,11 +81,23 @@ body {
   color: white;
   display: flex;
   justify-content: space-around;
-  text-align: center;
-  padding: 5px 2px;
-  font-size: 0.62rem;
+  align-items: center;
+  text-align: left;
+  padding: 5px 6px;
+  font-size: 0.58rem;
   line-height: 1.15;
   flex-shrink: 0;
+}
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.contact-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .hero {
