@@ -65,7 +65,7 @@
   <script>
     async function loadMarkdown(path) {
       try {
-        const res = await fetch(path);
+        const res = await fetch(path + '?t=' + Date.now());
         if (!res.ok) return null;
         const text = await res.text();
         const match = text.match(/---\n([\s\S]*?)\n---/);
@@ -93,10 +93,12 @@
 
     function renderCards(items, containerId) {
       const container = document.getElementById(containerId);
+      const ts = Date.now();
       container.innerHTML = items.map(item => {
         const hasImage = item.image && item.image.trim() !== '';
+        const imgSrc = hasImage ? item.image + '?t=' + ts : '';
         const imgHtml = hasImage 
-          ? `<img src="${item.image}" alt="" onerror="this.style.background='#f9f6f2'">`
+          ? `<img src="${imgSrc}" alt="" onerror="this.style.background='#f9f6f2'">`
           : `<div class="placeholder">Admin: add photo</div>`;
         const priceHtml = item.price ? `<div class="price">${item.price}</div>` : '';
         return `
