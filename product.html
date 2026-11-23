@@ -7,12 +7,44 @@
   <link rel="stylesheet" href="css/style.css">
   <style>
     .product-page { padding: 12px; max-width: 420px; margin: 0 auto; }
-    .product-page img { width: 100%; max-height: 280px; object-fit: contain; background: #faf8f5; border-radius: 8px; }
+    .product-page img { width: 100%; max-height: 280px; object-fit: contain; background: #f5f0e8; border-radius: 8px; }
     .product-page h1 { font-size: 1.4rem; color: #3e4f32; margin: 12px 0 4px; }
     .product-page .price { font-size: 1.2rem; color: #c17a4a; font-weight: bold; margin-bottom: 8px; }
     .product-page p { font-size: 0.9rem; line-height: 1.4; margin-bottom: 16px; }
     .add-btn { background: #c17a4a; color: white; border: none; padding: 12px 24px; border-radius: 20px; font-size: 1rem; width: 100%; cursor: pointer; }
     .back { display: inline-block; margin-bottom: 10px; color: #3e4f32; text-decoration: none; font-size: 0.85rem; }
+    .popup {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .popup.show { display: flex; }
+    .popup-box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 280px;
+      width: 90%;
+    }
+    .popup-box h3 { color: #3e4f32; margin-bottom: 8px; }
+    .popup-box p { font-size: 0.85rem; color: #555; margin-bottom: 16px; }
+    .popup-btns { display: flex; gap: 8px; }
+    .popup-btns button, .popup-btns a {
+      flex: 1;
+      padding: 10px;
+      border-radius: 16px;
+      border: none;
+      text-decoration: none;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+    .popup-btns .cart-btn { background: #c17a4a; color: white; }
+    .popup-btns .continue-btn { background: #f0ebe4; color: #3e4f32; }
   </style>
 </head>
 <body>
@@ -23,7 +55,17 @@
     <div class="price" id="product-price"></div>
     <p id="product-desc"></p>
     <button class="add-btn" onclick="addToCart()">Add to Cart</button>
-    <div id="cart-msg" style="text-align:center; margin-top:8px; font-size:0.8rem; color:#3e4f32;"></div>
+  </div>
+
+  <div class="popup" id="popup">
+    <div class="popup-box">
+      <h3>Added to Cart</h3>
+      <p id="popup-item"></p>
+      <div class="popup-btns">
+        <a href="cart.html" class="cart-btn">Go to Cart</a>
+        <button class="continue-btn" onclick="closePopup()">Continue Shopping</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -68,8 +110,12 @@
         });
       }
       localStorage.setItem('ww-cart', JSON.stringify(cart));
-      document.getElementById('cart-msg').textContent = 'Added to cart';
-      setTimeout(() => document.getElementById('cart-msg').textContent = '', 1500);
+      document.getElementById('popup-item').textContent = window.currentProduct.title + ' was added to your cart.';
+      document.getElementById('popup').classList.add('show');
+    }
+
+    function closePopup() {
+      document.getElementById('popup').classList.remove('show');
     }
 
     loadProduct();
