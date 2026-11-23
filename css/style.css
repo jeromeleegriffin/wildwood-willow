@@ -31,18 +31,7 @@ body {
 }
 
 .decor {
-  position: absolute;
-  object-fit: contain;
-  opacity: 0.5;
-  pointer-events: none;
-  z-index: 1;
-}
-.decor-mid {
-  width: 60px;
-  height: 100px;
-  top: 10px;
-  left: 55%;
-  transform: translateX(-50%) rotate(-10deg);
+  display: none;
 }
 
 .header {
@@ -87,10 +76,7 @@ body {
   opacity: 0.5;
 }
 .header-willow {
-  width: 100%;
-  height: auto;
-  display: block;
-  margin: 2px 0 0;
+  display: none;
 }
 .menu { font-size: 1.2rem; color: var(--olive); }
 
