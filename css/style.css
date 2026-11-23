@@ -124,11 +124,10 @@ body {
   justify-content: center;
   flex-shrink: 0;
 }
-.contact-icon {
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-  filter: brightness(0);
+.icon-text {
+  font-size: 14px;
+  color: var(--olive);
+  font-weight: bold;
 }
 
 .hero {
