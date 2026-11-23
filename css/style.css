@@ -140,9 +140,8 @@ body {
   opacity: 0.6;
 }
 .hero-text {
-  flex: 1;
+  flex: 0 0 105px;
   z-index: 1;
-  max-width: 115px;
   padding-top: 6px;
 }
 .hero h1 {
@@ -165,25 +164,27 @@ body {
   font-weight: bold;
 }
 .hero-logo {
-  flex: 0 0 100px;
+  flex: 0 0 105px;
   z-index: 1;
   display: flex;
   align-items: flex-start;
   justify-content: center;
+  margin-left: -10px;
   margin-top: -2px;
 }
 .hero-logo img {
-  width: 96px;
-  height: 96px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
 }
 .hero-image {
-  flex: 0 0 95px;
+  flex: 0 0 90px;
   z-index: 1;
+  margin-left: auto;
 }
 .hero-image img {
-  width: 95px;
-  height: 125px;
+  width: 90px;
+  height: 120px;
   object-fit: contain;
   object-position: center;
   background: transparent;
