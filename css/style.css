@@ -100,13 +100,13 @@ body {
 
 .hero {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: 4px 6px;
   background: #f5f0e8;
   gap: 2px;
   flex-shrink: 0;
   position: relative;
-  min-height: 145px;
+  min-height: 150px;
 }
 .leaf {
   position: absolute;
@@ -144,17 +144,18 @@ body {
 .hero-text {
   flex: 1;
   z-index: 1;
-  max-width: 130px;
+  max-width: 120px;
+  padding-top: 4px;
 }
 .hero h1 {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1;
   color: var(--olive);
   font-weight: normal;
   margin: 0;
 }
 .hero h1 span { color: var(--terracotta); }
-.hero p { font-size: 0.52rem; margin: 2px 0 5px; line-height: 1.15; }
+.hero p { font-size: 0.5rem; margin: 2px 0 5px; line-height: 1.15; }
 .cta {
   display: inline-block;
   background: var(--terracotta);
@@ -162,29 +163,30 @@ body {
   padding: 4px 8px;
   border-radius: 14px;
   text-decoration: none;
-  font-size: 0.5rem;
+  font-size: 0.48rem;
   font-weight: bold;
 }
 .hero-logo {
-  flex: 0 0 70px;
+  flex: 0 0 85px;
   z-index: 1;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  margin-top: -8px;
+  margin-top: -4px;
+  margin-right: -6px;
 }
 .hero-logo img {
-  width: 68px;
-  height: 68px;
+  width: 82px;
+  height: 82px;
   object-fit: contain;
 }
 .hero-image {
-  flex: 0 0 105px;
+  flex: 0 0 100px;
   z-index: 1;
 }
 .hero-image img {
-  width: 105px;
-  height: 135px;
+  width: 100px;
+  height: 130px;
   object-fit: contain;
   object-position: center;
   background: transparent;
