@@ -143,6 +143,23 @@ body {
 .leaf {
   display: none;
 }
+/* Feather away the isolated cluster of three leaves between the hero headline
+   and its supporting copy, without altering the outer willow border image. */
+.hero::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 30px;
+  top: 62px;
+  width: 166px;
+  height: 94px;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center,
+    var(--cream) 0%,
+    var(--cream) 44%,
+    rgba(245,240,232,0.94) 60%,
+    rgba(245,240,232,0) 100%);
+}
 .underline {
   width: 40px;
   height: 8px;
@@ -161,7 +178,7 @@ body {
   line-height: 1;
   color: var(--olive);
   font-weight: normal;
-  margin: 0 0 0 34px;
+  margin: 13px 0 0 8px;
   width: max-content;
   max-width: 100%;
 }
