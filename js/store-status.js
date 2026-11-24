@@ -41,10 +41,28 @@
       }
       .ww-orders-notice {
         background: #fff4e9; color: #4c3b29; border: 1px solid #dfb78f;
-        border-radius: 9px; padding: 10px 12px; font-size: .86rem;
-        line-height: 1.35; margin: 10px auto; max-width: 380px;
+        border-radius: 9px; padding: 9px 11px; font-size: .78rem;
+        line-height: 1.25; margin: 8px auto; max-width: 350px;
         width: calc(100% - 16px); box-sizing: border-box;
         font-family: Georgia, serif; text-align: center;
+      }
+      .hero > .ww-orders-notice--hero {
+        position: absolute; z-index: 4;
+        right: 9px; bottom: 5px;
+        width: min(205px, 52%);
+        max-width: none; margin: 0; padding: 6px 8px;
+        font-size: .59rem; line-height: 1.17;
+        border: 1px solid #cfa478; border-radius: 9px;
+        background: rgba(255, 250, 242, .97);
+        box-shadow: 0 1px 4px rgba(62,79,50,.08);
+      }
+      .ww-orders-notice--hero .ww-orders-short {
+        display: block; color: #3e4f32; font-weight: bold;
+        font-size: .72rem; margin-bottom: 2px;
+      }
+      .ww-orders-notice--hero .ww-orders-details {
+        display: -webkit-box; -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical; overflow: hidden;
       }
       button.ww-order-disabled { opacity: .55; cursor: not-allowed !important; }
     `;
@@ -77,17 +95,38 @@
 
   function pauseOrdering() {
     addStyles();
-    const existing = document.getElementById('ww-order-notice');
-    if (existing) existing.textContent = state.orders_message || defaults.orders_message;
-    if (!existing) {
-      const notice = document.createElement('div');
+    const message = state.orders_message || defaults.orders_message;
+    const hero = document.querySelector('.hero');
+    let notice = document.getElementById('ww-order-notice');
+    if (!notice) {
+      notice = document.createElement('div');
       notice.id = 'ww-order-notice';
       notice.className = 'ww-orders-notice';
       notice.setAttribute('role','status');
-      notice.textContent = state.orders_message || defaults.orders_message;
-      const target = document.querySelector('.product-page, .cart-page, .main-content, main, .shop-wrap');
-      if (target) target.prepend(notice);
-      else document.body.prepend(notice);
+    }
+    if (hero) {
+      // Keep the non-scrolling featured product and service panels untouched.
+      // The small notice lives in the open space below the hero portrait.
+      notice.classList.add('ww-orders-notice--hero');
+      notice.replaceChildren();
+      const heading = document.createElement('strong');
+      heading.className = 'ww-orders-short';
+      heading.textContent = 'Online orders paused';
+      const details = document.createElement('span');
+      details.className = 'ww-orders-details';
+      details.textContent = 'Browse as usual. Call with any questions.';
+      notice.title = message;
+      notice.setAttribute('aria-label', message);
+      notice.append(heading, details);
+      if (notice.parentElement !== hero) hero.append(notice);
+    } else {
+      notice.classList.remove('ww-orders-notice--hero');
+      notice.textContent = message;
+      notice.removeAttribute('title');
+      notice.removeAttribute('aria-label');
+      const target = document.querySelector('.product-page, .cart-page, main, .shop-wrap');
+      if (target && notice.parentElement !== target) target.prepend(notice);
+      else if (!target && notice.parentElement !== document.body) document.body.prepend(notice);
     }
     document.querySelectorAll('.add-btn, .checkout-btn').forEach(button => {
       button.disabled = true;
