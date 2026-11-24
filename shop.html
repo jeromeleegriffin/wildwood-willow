@@ -26,6 +26,7 @@
     .pager button { border: 1px solid #e8e0d8; background: white; border-radius: 6px; padding: 3px 8px; font-size: 0.65rem; }
   </style>
   <script src="/js/store-status.js?v=7" defer></script>
+  <script src="/js/catalog.js?v=1" defer></script>
 </head>
 <body>
   <div class="shop-wrap">
@@ -51,29 +52,11 @@
     let currentPage = 1;
     const perPage = 8;
 
-    async function loadItems(folder, slugs) {
-      const items = [];
-      for (const slug of slugs) {
-        try {
-          const res = await fetch(`/content/${folder}/${slug}.md`);
-          if (!res.ok) continue;
-          const text = await res.text();
-          const match = text.match(/---\n([\s\S]*?)\n---/);
-          if (!match) continue;
-          const d = {};
-          match[1].split('\n').forEach(line => {
-            const [key, ...rest] = line.split(':');
-            if (key && rest.length) d[key.trim()] = rest.join(':').trim();
-          });
-          items.push(d);
-        } catch (e) {}
-      }
-      return items;
-    }
-
     async function init() {
-      data.products = await loadItems('products', ['arnica-aloe-cream', 'mental-reset', 'nerve-pain-relaxant', 'appetite-suppressant']);
-      data.services = await loadItems('services', ['reflexology', 'vibration-therapy', 'foot-detox', 'massage-chair']);
+      [data.products, data.services] = await Promise.all([
+        window.WWCatalog.list('products'),
+        window.WWCatalog.list('services')
+      ]);
       renderTabs();
       render();
     }
@@ -118,7 +101,7 @@
       const grid = document.getElementById('shop-grid');
       grid.innerHTML = pageItems.map(p => `
         <div class="shop-card">
-          <img src="${p.image || ''}" alt="" onerror="this.style.background='#f9f6f2'">
+          <img src="${window.WWCatalog.image(p.image)}" alt="" onerror="this.style.background='#f9f6f2'">
           <h3>${p.title || ''}</h3>
           <p>${p.description || ''}</p>
         </div>
