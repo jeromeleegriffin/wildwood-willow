@@ -8,8 +8,11 @@
     /* Site tools belong only on the Contents home screen, away from New and Save. */
     #ww-site-links {
       position: fixed;
-      top: max(8px, env(safe-area-inset-top));
-      right: 8px;
+      bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+      left: 50%;
+      transform: translateX(-50%);
+      justify-content: center;
+      flex-wrap: wrap;
       display: flex;
       gap: 6px;
       z-index: 2147483640;
