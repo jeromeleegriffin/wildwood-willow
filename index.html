@@ -19,8 +19,8 @@
   </header>
 
   <div class="contact" id="contact">
-    <div class="contact-item"><div class="icon-circle"><span class="icon-text">&#128222;</span></div><span id="phone">507-430-1250</span></div>
-    <div class="contact-item"><div class="icon-circle"><span class="icon-text">&#128205;</span></div><div><span id="address1">21b SE 2nd St</span><br><span id="address2">Ortonville MN</span></div></div>
+    <a class="contact-item contact-link" id="phone-link" href="tel:+15074301250" aria-label="Call Wildwood and Willow"><div class="icon-circle"><span class="icon-text">&#128222;</span></div><span id="phone">507-430-1250</span></a>
+    <a class="contact-item contact-link" id="address-link" href="https://www.google.com/maps/search/?api=1&amp;query=21b%20SE%202nd%20St%2C%20Ortonville%20MN" target="_blank" rel="noopener noreferrer" aria-label="Open store address in maps"><div class="icon-circle"><span class="icon-text">&#128205;</span></div><div><span id="address1">21b SE 2nd St</span><br><span id="address2">Ortonville MN</span></div></a>
     <div class="contact-item"><div class="icon-circle"><span class="icon-text">&#128336;</span></div><div><span id="hours1">Tue-Fri</span><br><span id="hours2">9am-5pm</span></div></div>
   </div>
 
@@ -153,6 +153,16 @@
         if (contact.hours1) document.getElementById('hours1').textContent = contact.hours1;
         if (contact.hours2) document.getElementById('hours2').textContent = contact.hours2;
       }
+      const phoneNumber = document.getElementById('phone').textContent;
+      const dialablePhone = phoneNumber.replace(/[^\d+]/g, '');
+      document.getElementById('phone-link').href = 'tel:' + dialablePhone;
+      document.getElementById('service-phone').href = 'tel:' + dialablePhone;
+      const fullAddress = [
+        document.getElementById('address1').textContent,
+        document.getElementById('address2').textContent
+      ].join(', ');
+      document.getElementById('address-link').href =
+        'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(fullAddress);
 
       const products = await loadFolder('products');
       renderCards(products, 'product-cards');
