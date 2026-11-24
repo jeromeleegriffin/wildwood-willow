@@ -25,7 +25,7 @@
     .pager { display: flex; justify-content: center; gap: 6px; padding: 4px; background: #faf8f5; flex-shrink: 0; }
     .pager button { border: 1px solid #e8e0d8; background: white; border-radius: 6px; padding: 3px 8px; font-size: 0.65rem; }
   </style>
-  <script src="/js/store-status.js?v=1" defer></script>
+  <script src="js/store-status.js?v=1" defer></script>
 </head>
 <body>
   <div class="shop-wrap">
@@ -55,7 +55,7 @@
       const items = [];
       for (const slug of slugs) {
         try {
-          const res = await fetch(`/content/${folder}/${slug}.md`);
+          const res = await fetch(`content/${folder}/${slug}.md`);
           if (!res.ok) continue;
           const text = await res.text();
           const match = text.match(/---\n([\s\S]*?)\n---/);
@@ -118,7 +118,7 @@
       const grid = document.getElementById('shop-grid');
       grid.innerHTML = pageItems.map(p => `
         <div class="shop-card">
-          <img src="${p.image || ''}" alt="" onerror="this.style.background='#f9f6f2'">
+          <img src="${(p.image || '').replace(/^\\/images\\//, 'images/')}" alt="" onerror="this.style.background='#f9f6f2'">
           <h3>${p.title || ''}</h3>
           <p>${p.description || ''}</p>
         </div>
