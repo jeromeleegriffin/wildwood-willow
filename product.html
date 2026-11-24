@@ -6,29 +6,40 @@
   <title>Product - Wildwood & Willow</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* Detail pages may be taller than one screen; keep homepage sizing untouched. */
-    html, body { height: auto; min-height: 100%; overflow-x: hidden; overflow-y: auto; }
-    body { display: block; min-height: 100dvh; }
-    .product-page { padding: 12px 12px 28px; max-width: 420px; margin: 0 auto; }
-        .product-photo-button { display: block; width: 100%; padding: 0; background: #f5f0e8; border: 0; border-radius: 10px; overflow: hidden; cursor: zoom-in; }
-    .product-photo-button:focus-visible { outline: 3px solid #c17a4a; outline-offset: 3px; }
-    .product-photo-button img { display: block; width: 100%; height: auto; max-height: none; object-fit: contain; object-position: center; background: #f5f0e8; }
-    .product-photo-button[hidden], #product-photo-hint[hidden] { display: none; }
-    .product-photo-hint { font-size: .74rem; margin: 6px 0 8px; text-align: center; color: #665b50; }
-    .product-no-photo { display: none; background: #f0ebe4; color: #776f64; padding: 46px 12px; border-radius: 8px; text-align: center; }
+    /* Detail page fits the phone viewport; homepage styles are unchanged. */
+    html, body { height: 100%; height: 100dvh; overflow: hidden; }
+    body { display: block; height: 100dvh; min-height: 0; }
+    .product-page {
+      width: 100%; max-width: 420px; height: 100dvh;
+      margin: 0 auto; padding: max(8px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom));
+      display: flex; flex-direction: column; align-items: stretch;
+      gap: clamp(3px, 0.7dvh, 8px); overflow: hidden;
+    }
+    .product-photo {
+      display: flex; justify-content: center; align-items: center;
+      flex: 1 1 auto; min-height: 0; width: 100%;
+      border-radius: 10px; background: #f5f0e8;
+      overflow: hidden;
+    }
+    .product-photo[hidden] { display: none; }
+    .product-photo img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; }
+    .product-no-photo { display: none; flex: 1 1 auto; min-height: 80px; background: #f0ebe4; color: #776f64; padding: 16px 12px; border-radius: 8px; text-align: center; align-content: center; }
     .product-no-photo.is-visible { display: block; }
-    .ww-photo-viewer[hidden] { display: none; }
-    .ww-photo-viewer { position: fixed; z-index: 2147483645; inset: 0; background: rgba(20,25,17,.96); display: flex; align-items: center; justify-content: center; padding: 58px 9px 26px; }
-    .ww-photo-viewer img { display: block; width: 100%; height: 100%; object-fit: contain; }
-    .ww-photo-viewer-close { position: absolute; right: 12px; top: max(12px, env(safe-area-inset-top)); background: #fffdf8; color: #283825; border: 0; border-radius: 30px; padding: 10px 15px; font: bold 1rem system-ui,sans-serif; cursor: pointer; }
-    .product-page h1 { font-size: 1.4rem; color: #3e4f32; margin: 12px 0 4px; }
-    .product-page .price { font-size: 1.2rem; color: #c17a4a; font-weight: bold; margin-bottom: 8px; }
-    .product-page p { font-size: 0.9rem; line-height: 1.4; margin-bottom: 16px; white-space: pre-line; overflow-wrap: anywhere; }
-    .add-btn { background: #c17a4a; color: white; border: none; padding: 12px 24px; border-radius: 20px; font-size: 1rem; width: 100%; cursor: pointer; }
+    .product-page h1 { flex: 0 0 auto; font-size: clamp(1.05rem, 3dvh, 1.4rem); line-height: 1.13; color: #3e4f32; margin: 0; }
+    .product-page .price { flex: 0 0 auto; font-size: 1.05rem; color: #c17a4a; font-weight: bold; margin: 0; }
+    .product-page p { flex: 0 0 auto; font-size: clamp(.77rem, 1.9dvh, .9rem); line-height: 1.25; margin: 0; white-space: pre-line; overflow-wrap: anywhere; }
+    .add-btn { flex: 0 0 auto; background: #c17a4a; color: white; border: none; padding: 10px 18px; border-radius: 20px; font-size: .95rem; width: 100%; cursor: pointer; }
     .add-btn:disabled { opacity: .55; cursor: not-allowed; }
-    .price-help { font-size: .83rem; color: #665c51; line-height: 1.4; margin: 10px 0; }
+    .price-help { font-size: .76rem !important; color: #665c51; line-height: 1.22 !important; margin: 0; }
     .price-help[hidden] { display: none; }
-    .back { display: inline-block; margin-bottom: 10px; color: #3e4f32; text-decoration: none; font-size: 0.85rem; }
+    .back { flex: 0 0 auto; align-self: start; display: inline-block; margin: 0; padding: 3px 0; color: #3e4f32; text-decoration: none; font-size: .85rem; }
+    @media (max-height: 650px) {
+      .product-page { gap: 3px; padding-top: 5px; padding-bottom: 6px; }
+      .product-page h1 { font-size: 1.05rem; }
+      .product-page .price { font-size: .95rem; }
+      .product-page p { font-size: .77rem; line-height: 1.18; }
+      .add-btn { padding: 7px 14px; font-size: .85rem; }
+    }
     .popup {
       display: none;
       position: fixed;
@@ -68,21 +79,15 @@
 <body>
   <div class="product-page">
     <a href="index.html" class="back">← Back</a>
-    <button type="button" id="product-photo-button" class="product-photo-button" hidden aria-label="Enlarge product photo">
+    <div id="product-photo" class="product-photo" hidden>
       <img id="product-img" alt="">
-    </button>
+    </div>
     <div id="product-no-photo" class="product-no-photo">Product photo coming soon</div>
-    <p id="product-photo-hint" class="product-photo-hint" hidden>Tap photo to enlarge</p>
     <h1 id="product-title"></h1>
     <div class="price" id="product-price"></div>
     <p id="product-desc"></p>
     <p class="price-help" id="price-help" hidden>This product is not yet available to order online because its price hasn't been set. Please contact the store for details.</p>
     <button class="add-btn" id="add-to-cart-btn" onclick="addToCart()">Add to Cart</button>
-  </div>
-
-  <div id="ww-photo-viewer" class="ww-photo-viewer" role="dialog" aria-modal="true" aria-label="Full product photo" hidden>
-    <button type="button" class="ww-photo-viewer-close" id="ww-photo-viewer-close">Close ✕</button>
-    <img id="ww-photo-full" alt="">
   </div>
 
   <div class="popup" id="popup">
@@ -130,23 +135,20 @@
       document.getElementById('product-desc').textContent = data.description || '';
       const fullPhoto = data.image_full || data.image || data.image_thumb;
       const photoUrl = fullPhoto ? window.WWCatalog.image(fullPhoto) : '';
-      const photoButton = document.getElementById('product-photo-button');
-      const photoHint = document.getElementById('product-photo-hint');
+      const photoFrame = document.getElementById('product-photo');
       const noPhoto = document.getElementById('product-no-photo');
       if (photoUrl) {
         const photo = document.getElementById('product-img');
         photo.onerror = () => {
-          photoButton.hidden = true;
-          photoHint.hidden = true;
+          photoFrame.hidden = true;
           noPhoto.classList.add('is-visible');
         };
         photo.src = photoUrl;
         photo.alt = (data.title || 'Product') + ' photograph';
-        photoButton.hidden = false;
-        photoHint.hidden = false;
+        photoFrame.hidden = false;
         noPhoto.classList.remove('is-visible');
       } else {
-        photoButton.hidden = true;
+        photoFrame.hidden = true;
         photoHint.hidden = true;
         noPhoto.classList.add('is-visible');
       }
@@ -196,31 +198,6 @@
     function closePopup() {
       document.getElementById('popup').classList.remove('show');
     }
-
-    const photoButton = document.getElementById('product-photo-button');
-    const viewer = document.getElementById('ww-photo-viewer');
-    const viewerClose = document.getElementById('ww-photo-viewer-close');
-    let lastPhotoFocus = null;
-    photoButton.addEventListener('click', () => {
-      const thumbnail = document.getElementById('product-img');
-      if (!thumbnail.src) return;
-      lastPhotoFocus = document.activeElement;
-      document.getElementById('ww-photo-full').src = thumbnail.src;
-      document.getElementById('ww-photo-full').alt = thumbnail.alt;
-      viewer.hidden = false;
-      viewerClose.focus();
-    });
-    function closePhotoViewer() {
-      viewer.hidden = true;
-      if (lastPhotoFocus && lastPhotoFocus.isConnected) lastPhotoFocus.focus();
-    }
-    viewerClose.addEventListener('click', closePhotoViewer);
-    viewer.addEventListener('click', event => {
-      if (event.target === viewer) closePhotoViewer();
-    });
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && !viewer.hidden) closePhotoViewer();
-    });
 
     loadProduct();
   </script>
