@@ -78,6 +78,7 @@
   function pauseOrdering() {
     addStyles();
     const existing = document.getElementById('ww-order-notice');
+    if (existing) existing.textContent = state.orders_message || defaults.orders_message;
     if (!existing) {
       const notice = document.createElement('div');
       notice.id = 'ww-order-notice';
@@ -98,37 +99,86 @@
 
   function applyState() {
     if (!document.body) return;
-    if (state.mode === 'temporarily_closed') showClosed();
-    else if (state.mode === 'pause_orders') pauseOrdering();
+    const layer = document.getElementById('ww-closed-overlay');
+    const notice = document.getElementById('ww-order-notice');
+    if (state.mode === 'temporarily_closed') {
+      if (notice) notice.remove();
+      showClosed();
+    } else if (state.mode === 'pause_orders') {
+      if (layer) layer.remove();
+      pauseOrdering();
+    } else {
+      if (layer) layer.remove();
+      if (notice) notice.remove();
+      document.querySelectorAll('.add-btn, .checkout-btn').forEach(button => {
+        button.disabled = false;
+        button.classList.remove('ww-order-disabled');
+        button.removeAttribute('aria-disabled');
+        button.removeAttribute('title');
+      });
+    }
     document.dispatchEvent(new CustomEvent('ww:store-status', {detail:{mode:state.mode}}));
   }
 
-  async function loadStatus() {
-    if (promise) return promise;
+  // During migration this storefront is served by Cloudflare but edited in GitHub.
+  // Read GitHub's current public file first so admin changes do not wait for a site redeploy.
+  // A hosted static copy is a fallback only, not the primary source of truth.
+  async function readGitHubStatus() {
+    const api = 'https://api.github.com/repos/jeromeleegriffin/wildwood-willow/contents/content/settings/store-status.json?ref=main&fresh=' + Date.now();
+    const response = await fetch(api, {
+      cache: 'no-store',
+      headers: { 'Accept': 'application/vnd.github+json' }
+    });
+    if (!response.ok) throw new Error('GitHub status HTTP ' + response.status);
+    const data = await response.json();
+    if (!data.content || data.encoding !== 'base64') throw new Error('Unexpected GitHub status format');
+    const raw = atob(data.content.replace(/\\s/g, ''));
+    const bytes = Uint8Array.from(raw, char => char.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }
+
+  async function readHostedStatus() {
+    const response = await fetch(settingsUrl + '?fresh=' + Date.now(), { cache: 'no-store' });
+    if (!response.ok) throw new Error('Hosted status HTTP ' + response.status);
+    return response.json();
+  }
+
+  async function loadStatus(force = false) {
+    if (promise && !force) return promise;
+    if (promise && force) return promise;
     promise = (async () => {
+      let data = null;
       try {
-        const response = await fetch(settingsUrl + '?t=' + Date.now(), {cache:'no-store'});
-        if (response.ok) {
-          const body = await response.json();
-          if (body && ['open','pause_orders','temporarily_closed'].includes(body.mode))
-            state = {...defaults, ...body};
-        }
-      } catch (error) {
-        console.warn('Store availability settings could not be loaded', error);
+        // After ownership transfer the new Pages site can read its own static JSON.
+        data = location.hostname.endsWith('github.io') ?
+          await readHostedStatus() : await readGitHubStatus();
+      } catch (githubError) {
+        console.warn('Primary store-status lookup failed:', githubError);
+        try { data = await readHostedStatus(); }
+        catch (hostedError) { console.warn('Fallback store-status lookup failed:', hostedError); }
+      }
+      if (data && ['open', 'pause_orders', 'temporarily_closed'].includes(data.mode)) {
+        state = { ...defaults, ...data };
+      } else {
+        // Fail closed: no current availability data must never enable ordering.
+        state = { ...defaults, mode: 'pause_orders',
+          orders_message: 'Online ordering is temporarily unavailable. Please try again later.' };
       }
       ready = true;
       applyState();
       return state;
     })();
-    return promise;
+    try { return await promise; }
+    finally { promise = null; }
   }
 
   // Block direct Add to Cart calls and checkout clicks in pause mode, too.
   document.addEventListener('click', event => {
-    if (state.mode !== 'pause_orders' && state.mode !== 'temporarily_closed') return;
+    if (!ready || state.mode !== 'open') {
     if (event.target.closest('.add-btn, .checkout-btn')) {
       event.preventDefault();
       event.stopImmediatePropagation();
+    }
     }
   }, true);
 
@@ -137,6 +187,9 @@
     isOrderingAllowed: () => ready && state.mode === 'open',
     mode: () => state.mode
   };
+
+  window.addEventListener('pageshow', event => { if (event.persisted) loadStatus(true); });
+  window.addEventListener('focus', () => { if (ready) loadStatus(true); });
 
   if (document.readyState === 'loading')
     document.addEventListener('DOMContentLoaded', loadStatus, {once:true});
