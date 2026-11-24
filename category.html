@@ -25,6 +25,7 @@ nav.categories{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3p
 button.item{width:100%;font:inherit;cursor:pointer}
 .photo{height:125px;display:flex;justify-content:center;align-items:center;background:#f0ebe4;margin:7px;border-radius:7px;overflow:hidden;color:#817b75;font-size:.8rem;text-align:center}
 .photo img{width:100%;height:100%;object-fit:contain}
+.photo img.product-thumbnail{object-fit:cover;object-position:center}
 .item-info{padding:3px 10px 12px}
 .item h2{font-size:1rem;line-height:1.14;color:var(--olive);margin:0 0 4px}
 .item .price{font-size:.9rem;color:var(--terra);font-weight:bold;margin-bottom:5px}
@@ -117,7 +118,7 @@ button.item{width:100%;font:inherit;cursor:pointer}
      const photo=document.createElement('div');photo.className='photo';
      const cardPhoto=services ? item.image : (item.image_thumb || item.image_full || item.image);
      if(cardPhoto){
-       const img=document.createElement('img');img.src=window.WWCatalog.image(cardPhoto);img.alt='';
+       const img=document.createElement('img');img.src=window.WWCatalog.image(cardPhoto);img.alt='';if(!services)img.className='product-thumbnail';
        img.onerror=()=>{img.remove();photo.textContent='Photo coming soon'};
        photo.append(img);
      }else photo.textContent='Photo coming soon';
