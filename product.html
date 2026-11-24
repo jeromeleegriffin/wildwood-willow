@@ -12,6 +12,9 @@
     .product-page .price { font-size: 1.2rem; color: #c17a4a; font-weight: bold; margin-bottom: 8px; }
     .product-page p { font-size: 0.9rem; line-height: 1.4; margin-bottom: 16px; }
     .add-btn { background: #c17a4a; color: white; border: none; padding: 12px 24px; border-radius: 20px; font-size: 1rem; width: 100%; cursor: pointer; }
+    .add-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .price-help { font-size: .83rem; color: #665c51; line-height: 1.4; margin: 10px 0; }
+    .price-help[hidden] { display: none; }
     .back { display: inline-block; margin-bottom: 10px; color: #3e4f32; text-decoration: none; font-size: 0.85rem; }
     .popup {
       display: none;
@@ -55,7 +58,8 @@
     <h1 id="product-title"></h1>
     <div class="price" id="product-price"></div>
     <p id="product-desc"></p>
-    <button class="add-btn" onclick="addToCart()">Add to Cart</button>
+    <p class="price-help" id="price-help" hidden>This product is not yet available to order online because its price hasn't been set. Please contact the store for details.</p>
+    <button class="add-btn" id="add-to-cart-btn" onclick="addToCart()">Add to Cart</button>
   </div>
 
   <div class="popup" id="popup">
@@ -87,7 +91,22 @@
         if (key && rest.length) data[key.trim()] = rest.join(':').trim();
       });
       document.getElementById('product-title').textContent = data.title || '';
-      document.getElementById('product-price').textContent = data.price || '';
+      const priceText = (data.price || '').trim();
+      const priceIsValid = /^\$?\s*\d+(?:,\d{3})*(?:\.\d{1,2})?$/.test(priceText);
+      window.productPriceReady = priceIsValid;
+      document.getElementById('product-price').textContent = priceIsValid ? priceText : 'Price on request';
+      document.getElementById('price-help').hidden = priceIsValid;
+      const addButton = document.getElementById('add-to-cart-btn');
+      if (!priceIsValid) {
+        addButton.disabled = true;
+        addButton.textContent = 'Contact Store for Price';
+        addButton.title = 'Price must be set before online ordering';
+        addButton.dataset.notReady = 'true';
+      } else {
+        delete addButton.dataset.notReady;
+        addButton.textContent = 'Add to Cart';
+        addButton.disabled = !window.WWStoreAvailability || !window.WWStoreAvailability.isOrderingAllowed();
+      }
       document.getElementById('product-desc').textContent = data.description || '';
       if (data.image) document.getElementById('product-img').src = data.image;
       document.title = (data.title || 'Product') + ' - Wildwood & Willow';
@@ -97,7 +116,7 @@
 
     function addToCart() {
       if (!window.WWStoreAvailability || !window.WWStoreAvailability.isOrderingAllowed()) return;
-      if (!window.currentProduct) return;
+      if (!window.currentProduct || !window.productPriceReady) return;
       let cart = JSON.parse(localStorage.getItem('ww-cart') || '[]');
       const existing = cart.find(i => i.slug === window.currentSlug);
       if (existing) {
