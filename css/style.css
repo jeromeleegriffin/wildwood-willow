@@ -111,11 +111,17 @@ body {
   align-items: center;
   gap: 8px;
 }
-.contact-link,
-.contact-link:visited {
-  color: inherit;
+.contact .contact-link,
+.contact .contact-link:link,
+.contact .contact-link:visited,
+.contact .contact-link:hover,
+.contact .contact-link:active {
+  color: #ffffff;
   text-decoration: none;
   cursor: pointer;
+}
+.contact .contact-link span:not(.icon-text) {
+  color: #ffffff;
 }
 .contact-link:focus-visible {
   outline: 2px solid #fff;
