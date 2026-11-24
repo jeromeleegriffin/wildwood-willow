@@ -6,10 +6,13 @@
   <title>Cart - Wildwood & Willow</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .cart-page { padding: 12px; max-width: 420px; margin: 0 auto; background: #f5f0e8; min-height: 100vh; }
+    /* Detail pages may be taller than one screen; keep homepage sizing untouched. */
+    html, body { height: auto; min-height: 100%; overflow-x: hidden; overflow-y: auto; }
+    body { display: block; min-height: 100dvh; }
+    .cart-page { padding: 12px 12px 32px; max-width: 420px; margin: 0 auto; background: #f5f0e8; min-height: 100dvh; }
     .cart-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; align-items: center; }
     .cart-item img { width: 60px; height: 60px; object-fit: contain; background: #faf8f5; border-radius: 4px; }
-    .cart-item .info { flex: 1; }
+    .cart-item .info { flex: 1; min-width: 0; overflow-wrap: anywhere; }
     .cart-item .title { font-weight: bold; font-size: 0.9rem; }
     .cart-item .price { color: #c17a4a; font-size: 0.85rem; }
     .remove-btn { background: none; border: none; color: #75665a; font-size: 0.78rem; cursor: pointer; padding: 6px; }
