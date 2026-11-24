@@ -12,20 +12,36 @@
   };
 
   function parse(source) {
-    const match = source.match(/^---\s*\r?\n([\s\S]*?)\r?\n---/);
+    const match = source.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---(?:\s|$)/);
     if (!match) return null;
     const data = {};
-    match[1].split(/\r?\n/).forEach(line => {
-      const index = line.indexOf(':');
-      if (index === -1) return;
-      let value = line.slice(index + 1).trim();
-      // Support simple quoted strings commonly written by the CMS.
-      if ((value.startsWith('"') && value.endsWith('"')) ||
-          (value.startsWith("'") && value.endsWith("'"))) {
-        value = value.slice(1,-1);
+    const lines = match[1].split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const field = /^([A-Za-z_][A-Za-z0-9_-]*):(?:[ \t]*(.*))?$/.exec(line);
+      if (!field) continue;
+      const key = field[1];
+      let value = (field[2] || '').trim();
+      if (/^[|>][-+]?$/.test(value)) {
+        const folded = value.startsWith('>');
+        const collected = [];
+        while (i + 1 < lines.length) {
+          const next = lines[i + 1];
+          if (next.trim() && !/^[ \t]+/.test(next)) break;
+          i++;
+          collected.push(next);
+        }
+        const indent = Math.min(...collected.filter(x => x.trim()).map(x => (x.match(/^[ \t]*/) || [''])[0].length), Infinity);
+        const text = collected.map(x => x.slice(Math.min(x.length, Number.isFinite(indent) ? indent : 0)));
+        value = folded ? text.join(' ').replace(/[ \t]+/g, ' ').trim() : text.join('\n').trimEnd();
+      } else if (value.startsWith('"') && value.endsWith('"')) {
+        try { value = JSON.parse(value); }
+        catch { value = value.slice(1, -1); }
+      } else if (value.startsWith("'") && value.endsWith("'")) {
+        value = value.slice(1, -1).replace(/''/g, "'");
       }
-      data[line.slice(0,index).trim()] = value;
-    });
+      data[key] = value;
+    }
     return data;
   }
   async function fetchText(url) {
