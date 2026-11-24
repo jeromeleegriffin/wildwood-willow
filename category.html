@@ -120,6 +120,10 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
  document.title=category+' | Wildwood & Willow Botanicals';
  document.getElementById('heading').textContent=category;
  document.getElementById('intro').textContent=services?'Explore our wellness services':'Browse '+category.toLowerCase()+' products';
+ if(category==='Capsules'){
+   document.getElementById('heading').hidden=true;
+   document.getElementById('intro').hidden=true;
+ }
  document.querySelectorAll('[data-category]').forEach(a=>{if(a.dataset.category===category)a.setAttribute('aria-current','page')});
  const list=document.getElementById('items');
  const pager=document.getElementById('catalog-pager'),prev=document.getElementById('prev-page'),next=document.getElementById('next-page');
