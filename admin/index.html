@@ -27,12 +27,19 @@
       box-shadow: 0 2px 8px rgba(0,0,0,.13);
     }
     #ww-site-links #ww-preview-site { background: #3e4f32; color: #fff; }
+    #ww-site-links a {
+      border: 1px solid #c5d4bd; border-radius: 20px;
+      background: #fffdf8; color: #3e4f32; font: 600 12px system-ui, sans-serif;
+      padding: 8px 10px; white-space: nowrap; text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,.13);
+    }
     #ww-site-links button:focus-visible { outline: 2px solid #c17a4a; outline-offset: 3px; }
     #ww-preview-site[hidden] { display: none !important; }
   </style>
 </head>
 <body>
-  <nav id="ww-site-links" aria-label="View website">
+  <nav id="ww-site-links" aria-label="Website and photo tools">
+    <a href="crop.html" title="Crop and center a product or service photo">Crop Photo</a>
     <button type="button" id="ww-live-site" title="View the public website as a visitor sees it">Live Site</button>
     <button type="button" id="ww-preview-site" hidden title="View the storefront while the public website is temporarily closed">Admin Preview</button>
   </nav>
