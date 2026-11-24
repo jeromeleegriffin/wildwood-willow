@@ -42,6 +42,7 @@ button.item{width:100%;font:inherit;cursor:pointer}
 @media(max-width:330px){.brand{font-size:.96rem}.categories a{font-size:.52rem}.photo{height:100px}}
 </style>
   <script src="/js/store-status.js?v=7" defer></script>
+  <script src="/js/catalog.js?v=1" defer></script>
 </head>
 <body>
 <header class="header">
@@ -87,32 +88,6 @@ button.item{width:100%;font:inherit;cursor:pointer}
  let lastFocus;
  const knownProducts=['arnica-aloe-cream','mental-reset','nerve-pain-relaxant','appetite-suppressant'];
  const knownServices=['reflexology','vibration-therapy','foot-detox','massage-chair'];
- async function slugs(folder){
-   const fallback=folder==='services'?knownServices:knownProducts;
-   try{
-     const res=await fetch('https://api.github.com/repos/jeromeleegriffin/wildwood-willow/contents/content/'+folder,
-       {headers:{Accept:'application/vnd.github+json'}});
-     if(!res.ok)throw Error('Directory unavailable');
-     const files=await res.json();
-     if(!Array.isArray(files))throw Error('Not a listing');
-     return [...new Set([...files.filter(f=>f.type==='file'&&f.name.endsWith('.md')).map(f=>f.name.slice(0,-3)),...fallback])];
-   }catch(e){return fallback}
- }
- async function load(folder,slug){
-   try{
-     const res=await fetch('/content/'+folder+'/'+encodeURIComponent(slug)+'.md');
-     if(!res.ok)return null;
-     const source=await res.text();
-     const match=source.match(/^---\s*\n([\s\S]*?)\n---/);
-     if(!match)return null;
-     const data={slug};
-     match[1].split('\n').forEach(line=>{
-       const index=line.indexOf(':');
-       if(index>0)data[line.slice(0,index).trim()]=line.slice(index+1).trim();
-     });
-     return data;
-   }catch(e){return null}
- }
  function openService(item){
    lastFocus=document.activeElement;
    document.getElementById('dialog-title').textContent=item.title||'Service';
@@ -141,7 +116,7 @@ button.item{width:100%;font:inherit;cursor:pointer}
      else card.href='product.html?p='+encodeURIComponent(item.slug)+'&type=products';
      const photo=document.createElement('div');photo.className='photo';
      if(item.image){
-       const img=document.createElement('img');img.src=item.image;img.alt='';
+       const img=document.createElement('img');img.src=window.WWCatalog.image(item.image);img.alt='';
        img.onerror=()=>{img.remove();photo.textContent='Photo coming soon'};
        photo.append(img);
      }else photo.textContent='Photo coming soon';
@@ -156,12 +131,12 @@ button.item{width:100%;font:inherit;cursor:pointer}
  }
  async function init(){
    const folder=services?'services':'products';
-   const keys=await slugs(folder);
-   const found=(await Promise.all(keys.map(slug=>load(folder,slug)))).filter(Boolean);
+   const found=await window.WWCatalog.list(folder);
    render(services?found:found.filter(x=>(x.category||'').toLowerCase()===category.toLowerCase()));
    if(services){
      try{
-       const contact=await load('settings','contact');
+       const res=await fetch('/content/settings/contact.md?v=' + Date.now(),{cache:'no-store'});
+       const contact=res.ok ? window.WWCatalog.parse(await res.text()) : null;
        if(contact&&contact.phone){
          const p=document.getElementById('dialog-phone');
          p.textContent=contact.phone;p.href='tel:'+contact.phone.replace(/[^\d+]/g,'');
