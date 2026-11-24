@@ -357,7 +357,23 @@ body {
   position: relative;
   z-index: 10;
 }
-.categories div { text-align: center; }
+.categories a,
+.categories a:link,
+.categories a:visited,
+.categories a:hover,
+.categories a:active {
+  color: var(--olive);
+  text-decoration: none;
+  text-align: center;
+  flex: 1 1 0;
+  min-width: 0;
+  cursor: pointer;
+}
+.categories a:focus-visible {
+  outline: 2px solid var(--terracotta);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
 .categories span { font-size: 0.95rem; display: block; margin-bottom: 1px; }
 
 
