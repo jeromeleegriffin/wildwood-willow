@@ -150,6 +150,8 @@
       if (layer) layer.remove();
       if (notice) notice.remove();
       document.querySelectorAll('.add-btn, .checkout-btn').forEach(button => {
+        // Do not re-enable checkout or unpriced products just because the store is open.
+        if (button.matches('.checkout-btn') || button.dataset.notReady === 'true') return;
         button.disabled = false;
         button.classList.remove('ww-order-disabled');
         button.removeAttribute('aria-disabled');
