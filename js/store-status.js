@@ -2,7 +2,7 @@
    Admin edits /content/settings/store-status.json; never removes content. */
 (() => {
   'use strict';
-  const settingsUrl = '/content/settings/store-status.json';
+  const settingsUrl = 'content/settings/store-status.json';
   const defaults = {
     mode: 'open',
     closed_title: "We'll Be Back Soon",
