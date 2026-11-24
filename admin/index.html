@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wildwood & Willow Admin</title>
   <style>
-    /* Site tools are for browsing the CMS, never for overlaying an editor. */
+    /* Site tools belong only on the Contents home screen, away from New and Save. */
     #ww-site-links {
       position: fixed;
       top: max(8px, env(safe-area-inset-top));
@@ -51,10 +51,9 @@
       const preview = document.getElementById('ww-preview-site');
       const links = document.getElementById('ww-site-links');
       function updateToolVisibility() {
-        // Sveltia routes entry editors through /collections/<name>/entries/<slug>
-        // and creation through /collections/<name>/new. Only show tools on lists.
+        // Keep collection headers (New), entry editors (Save), and menus clear.
         const route = location.hash.replace(/^#/, '').split('?')[0].replace(/\/$/, '');
-        links.hidden = !/^\/collections(?:\/[^/]+(?:\/filter\/[^/]+)?)?$/.test(route);
+        links.hidden = route !== '/collections';
       }
       updateToolVisibility();
       window.addEventListener('hashchange', updateToolVisibility);
