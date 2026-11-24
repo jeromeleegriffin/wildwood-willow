@@ -153,8 +153,17 @@
           await readHostedStatus() : await readGitHubStatus();
       } catch (githubError) {
         console.warn('Primary store-status lookup failed:', githubError);
-        try { data = await readHostedStatus(); }
-        catch (hostedError) { console.warn('Fallback store-status lookup failed:', hostedError); }
+        try {
+          const fallback = await readHostedStatus();
+          // Old static hosting may report "open" long after an admin pause.
+          // Only accept a restrictive fallback. Otherwise fail closed.
+          if (location.hostname.endsWith('github.io') ||
+              fallback.mode === 'pause_orders' || fallback.mode === 'temporarily_closed') {
+            data = fallback;
+          }
+        } catch (hostedError) {
+          console.warn('Fallback store-status lookup failed:', hostedError);
+        }
       }
       if (data && ['open', 'pause_orders', 'temporarily_closed'].includes(data.mode)) {
         state = { ...defaults, ...data };
