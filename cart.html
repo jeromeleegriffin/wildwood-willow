@@ -12,7 +12,13 @@
     .cart-item .info { flex: 1; }
     .cart-item .title { font-weight: bold; font-size: 0.9rem; }
     .cart-item .price { color: #c17a4a; font-size: 0.85rem; }
-    .remove-btn { background: none; border: none; color: #999; font-size: 0.8rem; cursor: pointer; padding: 4px 8px; }
+    .remove-btn { background: none; border: none; color: #75665a; font-size: 0.78rem; cursor: pointer; padding: 6px; }
+    .qty-controls { display: flex; align-items: center; gap: 8px; margin-top: 7px; }
+    .qty-btn { width: 30px; height: 30px; border: 1px solid #c5b9ab; border-radius: 6px; background: white; color: #3e4f32; font-size: 1.05rem; cursor: pointer; }
+    .qty-value { min-width: 14px; text-align: center; font-size: .9rem; }
+    .cart-summary { text-align: right; margin: 12px 0 6px; font-weight: bold; color: #3e4f32; }
+    .checkout-note { color: #665b50; text-align: center; font-size: .8rem; line-height: 1.35; margin-top: 8px; }
+    .checkout-btn:disabled { opacity: .55; cursor: not-allowed; }
     .checkout-btn { background: #c17a4a; color: white; border: none; padding: 12px; border-radius: 20px; width: 100%; margin-top: 16px; font-size: 1rem; }
     .empty { text-align: center; padding: 40px 0; color: #888; }
   </style>
@@ -24,43 +30,106 @@
     <h2 style="color:#3e4f32; margin: 12px 0;">Your Cart</h2>
     <div id="cart-items"></div>
     <div id="total" style="text-align:right; margin-top:12px; font-weight:bold;"></div>
-    <button class="checkout-btn" onclick="alert('Checkout will connect to a payment app later (Stripe, Square, etc.)')">Checkout</button>
+    <p class="checkout-note">Online payment checkout is not connected yet. No orders or payments can be submitted.</p>
+    <button class="checkout-btn" disabled title="Checkout is not yet connected">Checkout Coming Soon</button>
   </div>
 
   <script>
-    function loadCart() {
-      const cart = JSON.parse(localStorage.getItem('ww-cart') || '[]');
-      const container = document.getElementById('cart-items');
-      if (!cart.length) {
-        container.innerHTML = '<div class="empty">Your cart is empty</div>';
-        document.getElementById('total').textContent = '';
-        return;
-      }
-      let totalQty = 0;
-      container.innerHTML = cart.map((item, index) => {
-        const qty = item.qty || 1;
-        totalQty += qty;
-        return `
-          <div class="cart-item">
-            <img src="${item.image || ''}" alt="">
-            <div class="info">
-              <div class="title">${item.title}</div>
-              <div class="price">${item.price} × ${qty}</div>
-            </div>
-            <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
-          </div>
-        `;
-      }).join('');
-      document.getElementById('total').textContent = totalQty + ' item' + (totalQty === 1 ? '' : 's');
+    function readCart() {
+      try {
+        const value = JSON.parse(localStorage.getItem('ww-cart') || '[]');
+        return Array.isArray(value) ? value.filter(item => item && typeof item === 'object') : [];
+      } catch (error) { return []; }
     }
-
-    function removeItem(index) {
-      let cart = JSON.parse(localStorage.getItem('ww-cart') || '[]');
-      cart.splice(index, 1);
+    function saveCart(cart) {
       localStorage.setItem('ww-cart', JSON.stringify(cart));
       loadCart();
     }
-
+    function parsePrice(price) {
+      if (typeof price === 'number') return Number.isFinite(price) && price >= 0 ? price : null;
+      const text = String(price == null ? '' : price).trim();
+      if (!/^\\$?\\s*\\d+(?:,\\d{3})*(?:\\.\\d{1,2})?$/.test(text)) return null;
+      const amount = Number(text.replace(/[$,\\s]/g, ''));
+      return Number.isFinite(amount) && amount >= 0 ? amount : null;
+    }
+    function money(value) {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+    }
+    function loadCart() {
+      const cart = readCart();
+      const container = document.getElementById('cart-items');
+      const summary = document.getElementById('total');
+      container.replaceChildren();
+      if (!cart.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = 'Your cart is empty';
+        container.append(empty);
+        summary.textContent = '';
+        return;
+      }
+      let count = 0;
+      let total = 0;
+      let missingPrice = false;
+      cart.forEach((item, index) => {
+        const qty = Math.max(1, Math.min(99, Math.floor(Number(item.qty) || 1)));
+        count += qty;
+        const unitPrice = parsePrice(item.price);
+        if (unitPrice === null) missingPrice = true;
+        else total += unitPrice * qty;
+        const row = document.createElement('div');
+        row.className = 'cart-item';
+        if (item.image) {
+          const img = document.createElement('img');
+          img.src = String(item.image);
+          img.alt = '';
+          row.append(img);
+        }
+        const info = document.createElement('div');
+        info.className = 'info';
+        const title = document.createElement('div');
+        title.className = 'title';
+        title.textContent = item.title || 'Product';
+        const price = document.createElement('div');
+        price.className = 'price';
+        price.textContent = unitPrice === null ? 'Price not available' : money(unitPrice) + ' each';
+        const controls = document.createElement('div');
+        controls.className = 'qty-controls';
+        const minus = document.createElement('button');
+        minus.type = 'button'; minus.className = 'qty-btn'; minus.textContent = '−';
+        minus.setAttribute('aria-label', 'Decrease quantity of ' + (item.title || 'product'));
+        minus.addEventListener('click', () => changeQty(index, -1));
+        const number = document.createElement('span');
+        number.className = 'qty-value'; number.textContent = String(qty);
+        const plus = document.createElement('button');
+        plus.type = 'button'; plus.className = 'qty-btn'; plus.textContent = '+';
+        plus.disabled = qty >= 99;
+        plus.setAttribute('aria-label', 'Increase quantity of ' + (item.title || 'product'));
+        plus.addEventListener('click', () => changeQty(index, 1));
+        controls.append(minus, number, plus);
+        info.append(title, price, controls);
+        const remove = document.createElement('button');
+        remove.type = 'button'; remove.className = 'remove-btn'; remove.textContent = 'Remove';
+        remove.addEventListener('click', () => removeItem(index));
+        row.append(info, remove);
+        container.append(row);
+      });
+      summary.textContent = count + ' item' + (count === 1 ? '' : 's') +
+        (missingPrice ? ' · Total unavailable (missing product prices)' : ' · Total: ' + money(total));
+    }
+    function changeQty(index, delta) {
+      const cart = readCart();
+      if (!cart[index]) return;
+      const next = Math.floor(Number(cart[index].qty) || 1) + delta;
+      if (next < 1) cart.splice(index, 1);
+      else cart[index].qty = Math.min(99, next);
+      saveCart(cart);
+    }
+    function removeItem(index) {
+      const cart = readCart();
+      cart.splice(index, 1);
+      saveCart(cart);
+    }
     loadCart();
   </script>
 </body>
