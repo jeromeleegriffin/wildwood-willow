@@ -49,13 +49,14 @@
     if (!res.ok) throw new Error('Content HTTP ' + res.status);
     return res.text();
   }
-  async function document(folder, slug) {
+  async function document(folder, slug, options = {}) {
     if (!/^[a-z0-9_-]+$/i.test(slug) || !/^(products|services)$/.test(folder)) return null;
     const path = 'content/' + folder + '/' + slug + '.md';
     let markdown;
     try {
       markdown = await fetchText(base + path + '?v=' + Date.now());
     } catch (err) {
+      if (options.freshOnly) return null;
       try { markdown = await fetchText('/' + path + '?v=' + Date.now()); }
       catch (err2) { return null; }
     }
