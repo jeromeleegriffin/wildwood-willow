@@ -272,7 +272,7 @@ body {
 }
 .card {
   background: var(--card-bg);
-  min-height: 180px;
+  min-height: 200px;
   
   border: 1px solid #e8e0d8;
   border-radius: 6px;
