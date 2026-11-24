@@ -5,6 +5,6 @@ description: Herbal support for nerve discomfort and relaxation.
 featured: true
 category: Topicals
 image:
-image_full: /images/nerve-pain-relaxant.jpg
+image_full:
 image_thumb:
 ---
