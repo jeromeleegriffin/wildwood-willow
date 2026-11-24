@@ -98,7 +98,7 @@
 
   <div style="text-align:center; padding:8px; font-size:0.6rem;">
     <a href="cart.html" style="color:#3e4f32; text-decoration:none; margin-right:12px;">Cart</a>
-    <a href="/admin/" style="color:#999; text-decoration:none;">Admin</a>
+    <a href="admin/" style="color:#999; text-decoration:none;">Admin</a>
   </div>
 
   <script>
@@ -124,7 +124,7 @@
         ? ['arnica-aloe-cream', 'mental-reset', 'nerve-pain-relaxant', 'appetite-suppressant']
         : ['reflexology', 'vibration-therapy', 'foot-detox', 'massage-chair'];
       for (const slug of known) {
-        const data = await loadMarkdown(`/content/${folder}/${slug}.md`);
+        const data = await loadMarkdown(`content/${folder}/${slug}.md`);
         if (data && data.featured !== 'false') {
           data.slug = slug;
           data.folder = folder;
