@@ -22,6 +22,7 @@
   <meta name="twitter:image" content="https://wildwood-willow.jeromeleegriffin.workers.dev/images/hero-final.png">
   <link rel="stylesheet" href="css/style.css?v=98">
   <script src="/js/store-status.js?v=7" defer></script>
+  <script src="/js/catalog.js?v=1" defer></script>
 </head>
 <body>
   <header class="header">
@@ -119,19 +120,10 @@
     }
 
     async function loadFolder(folder) {
-      const items = [];
-      const known = folder === 'products' 
-        ? ['arnica-aloe-cream', 'mental-reset', 'nerve-pain-relaxant', 'appetite-suppressant']
-        : ['reflexology', 'vibration-therapy', 'foot-detox', 'massage-chair'];
-      for (const slug of known) {
-        const data = await loadMarkdown(`/content/${folder}/${slug}.md`);
-        if (data && data.featured !== 'false') {
-          data.slug = slug;
-          data.folder = folder;
-          items.push(data);
-        }
-      }
-      return items;
+      const items = await window.WWCatalog.list(folder);
+      // Home remains a carefully sized four-card showcase, not a scrolling catalog.
+      const featured = items.filter(item => item.featured !== 'false');
+      return featured.slice(0, 4);
     }
 
     function renderCards(items, containerId) {
@@ -139,7 +131,7 @@
       const ts = Date.now();
       container.innerHTML = items.map(item => {
         const hasImage = item.image && item.image.trim() !== '';
-        const imgSrc = hasImage ? item.image + '?t=' + ts : '';
+        const imgSrc = hasImage ? window.WWCatalog.image(item.image) + '?t=' + ts : '';
         const imgHtml = hasImage 
           ? `<img src="${imgSrc}" alt="" onerror="this.style.background='#f9f6f2'">`
           : `<div class="placeholder">Admin: add photo</div>`;
