@@ -50,6 +50,7 @@
     .popup-btns .continue-btn { background: #f0ebe4; color: #3e4f32; }
   </style>
   <script src="/js/store-status.js?v=7" defer></script>
+  <script src="/js/catalog.js?v=1"></script>
 </head>
 <body>
   <div class="product-page">
@@ -80,16 +81,13 @@
 
     async function loadProduct() {
       if (!slug) return;
-      const res = await fetch(`/content/${folder}/${slug}.md?t=` + Date.now());
-      if (!res.ok) return;
-      const text = await res.text();
-      const match = text.match(/---\n([\s\S]*?)\n---/);
-      if (!match) return;
-      const data = {};
-      match[1].split('\n').forEach(line => {
-        const [key, ...rest] = line.split(':');
-        if (key && rest.length) data[key.trim()] = rest.join(':').trim();
-      });
+      if (folder !== 'products') return;
+      const data = await window.WWCatalog.document('products', slug);
+      if (!data) {
+        document.getElementById('product-title').textContent = 'Product unavailable';
+        document.getElementById('add-to-cart-btn').disabled = true;
+        return;
+      }
       document.getElementById('product-title').textContent = data.title || '';
       const priceText = (data.price || '').trim();
       const priceIsValid = /^\$?\s*\d+(?:,\d{3})*(?:\.\d{1,2})?$/.test(priceText);
@@ -108,7 +106,7 @@
         addButton.disabled = !window.WWStoreAvailability || !window.WWStoreAvailability.isOrderingAllowed();
       }
       document.getElementById('product-desc').textContent = data.description || '';
-      if (data.image) document.getElementById('product-img').src = data.image;
+      if (data.image) document.getElementById('product-img').src = window.WWCatalog.image(data.image);
       document.title = (data.title || 'Product') + ' - Wildwood & Willow';
       window.currentProduct = data;
       window.currentSlug = slug;
