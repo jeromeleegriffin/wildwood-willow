@@ -41,6 +41,27 @@ button.item{width:100%;font:inherit;cursor:pointer}
 .dialog .close-btn{background:var(--olive);border:0;color:white;border-radius:26px;padding:12px;width:100%;font:inherit;margin-top:8px}
 .dialog a{display:block;color:var(--olive);white-space:nowrap;margin:8px 0 14px}
 @media(max-width:330px){.brand{font-size:.96rem}.categories a{font-size:.52rem}.photo{height:100px}}
+html,body{height:100%;overflow:hidden}
+body{height:100dvh;display:flex;flex-direction:column;max-width:720px}
+.header,.back{flex:none}
+.header{padding:clamp(5px,1.5dvh,18px) 16px 6px}
+.back{padding:clamp(5px,1dvh,12px) 16px}
+main{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 13px max(6px,env(safe-area-inset-bottom))}
+#ww-order-notice{flex:none;margin:4px 0!important;padding:6px!important;font-size:.72rem!important;line-height:1.2!important}
+h1{flex:none;margin:5px 0 3px}.intro{flex:none;margin:0 0 5px}
+nav.categories{flex:none;margin:3px 0 7px}
+#items{flex:1;min-height:0;grid-template-rows:minmax(0,1fr);gap:10px;overflow:hidden}
+.item{min-height:0;max-height:100%;padding:0;justify-content:flex-start}
+.photo{height:auto;aspect-ratio:2/1;flex:0 1 auto;min-height:0;max-height:48%;margin:7px}
+.photo img{object-fit:contain}
+.item-info{min-height:0;overflow:hidden;padding:3px 8px 8px;display:flex;flex-direction:column;flex:1}
+.item h2,.item .price,.action{flex:none;overflow-wrap:anywhere}
+.item p{min-height:0;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5}
+.action{margin-top:auto;padding-top:4px}
+.pager{flex:none;display:flex;align-items:center;justify-content:center;gap:12px;padding:6px 0 0;color:var(--olive);font-size:.82rem}
+.pager button{min-width:48px;min-height:36px;background:#fffdf8;border:1px solid #d9ccbb;border-radius:10px;color:var(--olive);font:inherit;font-weight:bold;cursor:pointer}
+.pager button:disabled{opacity:.35;cursor:default}.pager[hidden]{display:none}
+@media(max-height:500px){.header{padding:3px}.subtitle,.intro{display:none}.back{padding:3px 10px}h1{font-size:1rem;margin:2px} .categories a{padding:2px}.categories a span{font-size:.9rem;margin:0}nav.categories{margin:2px 0}#ww-order-notice{font-size:.65rem!important;padding:3px!important}.photo{max-height:40%;margin:4px}.item-info{padding:2px 5px}.item h2{font-size:.8rem}.item p{font-size:.68rem;-webkit-line-clamp:2}.action{font-size:.65rem}.pager{padding:2px}.pager button{min-height:28px}}
 </style>
   <script src="/js/store-status.js?v=7" defer></script>
   <script src="/js/catalog.js?v=2"></script>
@@ -62,6 +83,7 @@ button.item{width:100%;font:inherit;cursor:pointer}
   <a href="category.html?category=Services" data-category="Services"><span>🌱</span>SERVICES</a>
  </nav>
  <div id="items" aria-live="polite"><div class="message">Loading…</div></div>
+ <nav class="pager" id="catalog-pager" aria-label="Catalog pages" hidden><button type="button" id="prev-page" aria-label="Previous page">←</button><span id="page-count" aria-live="polite"></span><button type="button" id="next-page" aria-label="Next page">→</button></nav>
 </main>
 <div class="overlay" id="overlay" hidden>
  <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" tabindex="-1">
@@ -85,6 +107,11 @@ button.item{width:100%;font:inherit;cursor:pointer}
  document.getElementById('intro').textContent=services?'Explore our wellness services':'Browse '+category.toLowerCase()+' products';
  document.querySelectorAll('[data-category]').forEach(a=>{if(a.dataset.category===category)a.setAttribute('aria-current','page')});
  const list=document.getElementById('items');
+ const pager=document.getElementById('catalog-pager'),prev=document.getElementById('prev-page'),next=document.getElementById('next-page');
+ let allItems=[],page=0;
+ const perPage=2;
+ function changePage(delta){page=Math.max(0,Math.min(Math.ceil(allItems.length/perPage)-1,page+delta));render(allItems)}
+ prev.addEventListener('click',()=>changePage(-1));next.addEventListener('click',()=>changePage(1));
  const overlay=document.getElementById('overlay');
  let lastFocus;
  const knownProducts=['arnica-aloe-cream','mental-reset','nerve-pain-relaxant','appetite-suppressant'];
@@ -102,6 +129,10 @@ button.item{width:100%;font:inherit;cursor:pointer}
  overlay.addEventListener('click',e=>{if(e.target===overlay)closeService()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)closeService()});
  function render(items){
+   allItems=items;
+   const pages=Math.max(1,Math.ceil(items.length/perPage));page=Math.max(0,Math.min(page,pages-1));
+   pager.hidden=pages<=1;prev.disabled=page===0;next.disabled=page===pages-1;
+   document.getElementById('page-count').textContent=(page+1)+' of '+pages;
    list.replaceChildren();
    if(!items.length){
      const message=document.createElement('div');
@@ -110,7 +141,7 @@ button.item{width:100%;font:inherit;cursor:pointer}
      list.append(message);
      return;
    }
-   items.forEach(item=>{
+   items.slice(page*perPage,(page+1)*perPage).forEach(item=>{
      const card=document.createElement(services?'button':'a');
      card.className='item';
      if(services){card.type='button';card.addEventListener('click',()=>openService(item))}
