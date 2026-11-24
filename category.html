@@ -133,6 +133,11 @@ button.item{width:100%;font:inherit;cursor:pointer}
    const folder=services?'services':'products';
    const found=await window.WWCatalog.list(folder);
    render(services?found:found.filter(x=>(x.category||'').toLowerCase()===category.toLowerCase()));
+   if (services) {
+     const requested = new URLSearchParams(location.search).get('service');
+     const selected = found.find(item => item.slug === requested);
+     if (selected) openService(selected);
+   }
    if(services){
      try{
        const res=await fetch('/content/settings/contact.md?v=' + Date.now(),{cache:'no-store'});
