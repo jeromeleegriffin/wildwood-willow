@@ -37,6 +37,23 @@ collections:
   - name: settings
     label: Site Settings
     files:
+      - file: content/settings/store-status.json
+        label: Website Availability
+        name: store_status
+        format: json
+        fields:
+          - label: Website Status
+            name: mode
+            widget: select
+            default: open
+            options:
+              - { label: "Open Website (Accept Orders)", value: open }
+              - { label: "Pause Orders Only", value: pause_orders }
+              - { label: "Temporarily Close Website", value: temporarily_closed }
+            hint: "All options are reversible. Temporarily Close Website only displays a temporary notice; it never deletes your site."
+          - { label: Temporary Closure Heading, name: closed_title, widget: string, default: "We'll Be Back Soon" }
+          - { label: Temporary Closure Message, name: closed_message, widget: text, default: "Wildwood & Willow Botanicals is temporarily unavailable. Please check back soon." }
+          - { label: Orders Paused Message, name: orders_message, widget: text, default: "Online ordering is temporarily paused. You can still browse our products and services." }
       - file: content/settings/contact.md
         label: Contact & Hours
         name: contact
