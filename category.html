@@ -115,8 +115,9 @@ button.item{width:100%;font:inherit;cursor:pointer}
      if(services){card.type='button';card.addEventListener('click',()=>openService(item))}
      else card.href='product.html?p='+encodeURIComponent(item.slug)+'&type=products';
      const photo=document.createElement('div');photo.className='photo';
-     if(item.image){
-       const img=document.createElement('img');img.src=window.WWCatalog.image(item.image);img.alt='';
+     const cardPhoto=services ? item.image : (item.image_thumb || item.image_full || item.image);
+     if(cardPhoto){
+       const img=document.createElement('img');img.src=window.WWCatalog.image(cardPhoto);img.alt='';
        img.onerror=()=>{img.remove();photo.textContent='Photo coming soon'};
        photo.append(img);
      }else photo.textContent='Photo coming soon';
