@@ -30,6 +30,7 @@ collections:
     fields:
       - { label: Title, name: title, widget: string }
       - { label: Description, name: description, widget: text }
+      - { label: More About This Service, name: details, widget: text, required: false, hint: "Shown in the service information popup" }
       - { label: Featured, name: featured, widget: boolean, default: true }
       - { label: Image, name: image, widget: image }
 
