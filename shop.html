@@ -118,7 +118,7 @@
       const grid = document.getElementById('shop-grid');
       grid.innerHTML = pageItems.map(p => `
         <div class="shop-card">
-          <img src="${(p.image || '').replace(/^\\/images\\//, 'images/')}" alt="" onerror="this.style.background='#f9f6f2'">
+          <img src="${(p.image || '').replace(/^\/images\//, 'images/')}" alt="" onerror="this.style.background='#f9f6f2'">
           <h3>${p.title || ''}</h3>
           <p>${p.description || ''}</p>
         </div>
