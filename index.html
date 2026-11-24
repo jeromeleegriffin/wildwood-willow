@@ -130,8 +130,9 @@
       const container = document.getElementById(containerId);
       const ts = Date.now();
       container.innerHTML = items.map(item => {
-        const hasImage = item.image && item.image.trim() !== '';
-        const imgSrc = hasImage ? window.WWCatalog.image(item.image) + '?t=' + ts : '';
+        const cardImage = item.folder === 'products' ? (item.image_thumb || item.image_full || item.image) : item.image;
+        const hasImage = cardImage && cardImage.trim() !== '';
+        const imgSrc = hasImage ? window.WWCatalog.image(cardImage) + '?t=' + ts : '';
         const imgHtml = hasImage 
           ? `<img src="${imgSrc}" alt="" onerror="this.style.background='#f9f6f2'">`
           : `<div class="placeholder">Admin: add photo</div>`;
