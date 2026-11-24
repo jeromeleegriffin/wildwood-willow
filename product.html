@@ -128,7 +128,8 @@
         addButton.disabled = !window.WWStoreAvailability || !window.WWStoreAvailability.isOrderingAllowed();
       }
       document.getElementById('product-desc').textContent = data.description || '';
-      const photoUrl = data.image ? window.WWCatalog.image(data.image) : '';
+      const fullPhoto = data.image_full || data.image || data.image_thumb;
+      const photoUrl = fullPhoto ? window.WWCatalog.image(fullPhoto) : '';
       const photoButton = document.getElementById('product-photo-button');
       const photoHint = document.getElementById('product-photo-hint');
       const noPhoto = document.getElementById('product-no-photo');
@@ -176,7 +177,7 @@
           slug: window.currentSlug,
           title: window.currentProduct.title,
           price: window.currentProduct.price,
-          image: window.currentProduct.image,
+          image: window.currentProduct.image_thumb || window.currentProduct.image_full || window.currentProduct.image,
           qty: 1
         });
       }
