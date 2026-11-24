@@ -111,7 +111,7 @@
         link.className = 'shop-card';
         link.href = mode === 'products'
           ? 'product.html?p=' + encodeURIComponent(item.slug) + '&type=products'
-          : 'category.html?category=Services';
+          : 'category.html?category=Services&service=' + encodeURIComponent(item.slug);
         link.setAttribute('aria-label', mode === 'products'
           ? 'View product: ' + (item.title || 'Product')
           : 'Learn about services: ' + (item.title || 'Service'));
