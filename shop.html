@@ -142,7 +142,7 @@
         const description = document.createElement('p');
         description.textContent = item.description || '';
         link.append(title);
-        if (mode === 'products' && item.price) {const price=document.createElement('span');price.className='shop-price';price.textContent=item.price;link.append(price)}
+        if (mode === 'products' && (item.price || /^0+$/.test(item.quantity_available||''))) {const price=document.createElement('span');price.className='shop-price';price.textContent=/^0+$/.test(item.quantity_available||'')?'Temporarily Sold Out':item.price;link.append(price)}
         link.append(description);
         grid.append(link);
       });

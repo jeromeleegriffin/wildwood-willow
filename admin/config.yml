@@ -17,6 +17,7 @@ collections:
     fields:
       - { label: Title, name: title, widget: string }
       - { label: Price, name: price, widget: string }
+      - { label: Quantity Available, name: quantity_available, widget: number, value_type: int, min: 0, max: 9999, step: 1, hint: "Enter the number in stock. Zero displays Temporarily Sold Out. Update this count manually after confirmed payments." }
       - { label: Description, name: description, widget: text }
       - { label: Featured, name: featured, widget: boolean, default: false }
       - { label: Category, name: category, widget: select, options: ["Capsules", "Tinctures", "Teas", "Topicals", "Home"] }

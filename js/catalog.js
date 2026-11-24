@@ -96,5 +96,9 @@
     if (/^https:\/\//i.test(src)) return src;
     return '';
   }
-  window.WWCatalog = {list, document, parse, image};
+  function stock(item) {
+    const value = String(item?.quantity_available ?? '').trim();
+    return /^\d{1,4}$/.test(value) ? Number(value) : null;
+  }
+  window.WWCatalog = {list, document, parse, image, stock};
 })();

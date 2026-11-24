@@ -179,7 +179,7 @@ nav.categories{flex:none;margin:3px 0 7px}
      const info=document.createElement('div');info.className='item-info';
      const name=document.createElement('h2');name.textContent=item.title||'Item';
      info.append(name);
-     if(!services&&item.price){const price=document.createElement('div');price.className='price';price.textContent=item.price;info.append(price)}
+     if(!services&&(item.price||/^0+$/.test(item.quantity_available||''))){const price=document.createElement('div');price.className='price';price.textContent=/^0+$/.test(item.quantity_available||'')?'Temporarily Sold Out':item.price;info.append(price)}
      const description=document.createElement('p');description.textContent=item.description||'';info.append(description);
      const action=document.createElement('span');action.className='action';action.textContent=services?'More information':'View product';info.append(action);
      card.append(photo,info);list.append(card);

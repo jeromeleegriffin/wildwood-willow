@@ -74,7 +74,7 @@
     .popup-btns .continue-btn { background: #f0ebe4; color: #3e4f32; }
   </style>
   <script src="/js/store-status.js?v=7" defer></script>
-  <script src="/js/catalog.js?v=2"></script>
+  <script src="/js/catalog.js?v=4"></script>
 </head>
 <body>
   <div class="product-page">
@@ -87,7 +87,8 @@
     <div class="price" id="product-price"></div>
     <p id="product-desc"></p>
     <p class="price-help" id="price-help" hidden>This product is not yet available to order online because its price hasn't been set. Please contact the store for details.</p>
-    <button class="add-btn" id="add-to-cart-btn" onclick="addToCart()">Add to Cart</button>
+    <label id="quantity-fields" hidden>Quantity <input id="product-quantity" type="number" inputmode="numeric" min="1" step="1" value="1" style="width:5em"></label>
+    <button class="add-btn" id="add-to-cart-btn" disabled data-not-ready="true" onclick="addToCart()">Add to Cart</button>
   </div>
 
   <div class="popup" id="popup">
@@ -122,14 +123,22 @@
       document.getElementById('product-price').textContent = priceIsValid ? priceText : 'Price on request';
       document.getElementById('price-help').hidden = priceIsValid;
       const addButton = document.getElementById('add-to-cart-btn');
-      if (!priceIsValid) {
+      const stock = window.WWCatalog.stock(data);
+      if (stock === 0) {
+        addButton.disabled = true;
+        addButton.textContent = 'Temporarily Sold Out';
+      } else if (!priceIsValid) {
         addButton.disabled = true;
         addButton.textContent = 'Contact Store for Price';
         addButton.title = 'Price must be set before online ordering';
         addButton.dataset.notReady = 'true';
+      } else if (stock === null) {
+        addButton.disabled = true;
+        addButton.textContent = 'Contact Store for Availability';
       } else {
         delete addButton.dataset.notReady;
         addButton.textContent = 'Add to Cart';
+        document.getElementById('product-quantity').max = stock;
         addButton.disabled = !window.WWStoreAvailability || !window.WWStoreAvailability.isOrderingAllowed();
       }
       document.getElementById('product-desc').textContent = data.description || '';
@@ -155,11 +164,24 @@
       document.title = (data.title || 'Product') + ' - Wildwood & Willow';
       window.currentProduct = data;
       window.currentSlug = slug;
+      syncQuantityVisibility();
     }
 
-    function addToCart() {
+    function syncQuantityVisibility() {
+      document.getElementById('quantity-fields').hidden = !(window.WWStoreAvailability?.isOrderingAllowed() && window.productPriceReady && window.WWCatalog.stock(window.currentProduct) > 0);
+    }
+    document.addEventListener('ww:store-status', syncQuantityVisibility);
+    let adding = false;
+    async function addToCart() {
       if (!window.WWStoreAvailability || !window.WWStoreAvailability.isOrderingAllowed()) return;
-      if (!window.currentProduct || !window.productPriceReady) return;
+      if (!window.currentProduct || !window.productPriceReady || adding) return;
+      adding = true;
+      try {
+      const current = await window.WWCatalog.document('products', window.currentSlug, {freshOnly:true});
+      if (!window.WWStoreAvailability.isOrderingAllowed()) return;
+      const stock = window.WWCatalog.stock(current);
+      const qtyInput = document.getElementById('product-quantity');
+      const wanted = Number(qtyInput.value);
       let cart = [];
       try {
         const saved = JSON.parse(localStorage.getItem('ww-cart') || '[]');
@@ -168,19 +190,26 @@
         // Recover from damaged or outdated saved cart data.
       }
       const existing = cart.find(i => i.slug === window.currentSlug);
+      const inCart = cart.filter(i => i.slug === window.currentSlug).reduce((sum,i) => sum + Math.max(1,Math.floor(Number(i.qty)||1)),0);
+      if (stock === null || stock === 0 || !Number.isInteger(wanted) || wanted < 1 || wanted + inCart > stock) {
+        document.querySelector('#popup h3').textContent = 'Quantity unavailable';
+        document.getElementById('popup-item').textContent = stock === null ? 'We could not verify stock. Please try again.' : stock === 0 ? 'This product is temporarily sold out.' : 'You can add up to ' + Math.max(0,stock-inCart) + ' more. Check the quantity already in your cart.';
+        document.getElementById('popup').classList.add('show');
+        return;
+      }
       if (existing) {
         const currentQty = Math.max(1, Math.floor(Number(existing.qty) || 1));
-        existing.qty = Math.min(99, currentQty + 1);
+        existing.qty = currentQty + wanted;
         existing.title = window.currentProduct.title;
         existing.price = window.currentProduct.price;
-        existing.image = window.currentProduct.image;
+        existing.image = window.currentProduct.image_thumb || window.currentProduct.image_full || window.currentProduct.image;
       } else {
         cart.push({
           slug: window.currentSlug,
           title: window.currentProduct.title,
           price: window.currentProduct.price,
           image: window.currentProduct.image_thumb || window.currentProduct.image_full || window.currentProduct.image,
-          qty: 1
+          qty: wanted
         });
       }
       try {
@@ -191,8 +220,10 @@
         document.querySelector('#popup h3').textContent = 'Cart not saved';
         return;
       }
+      document.querySelector('#popup h3').textContent = 'Added to Cart';
       document.getElementById('popup-item').textContent = window.currentProduct.title + ' was added to your cart.';
       document.getElementById('popup').classList.add('show');
+      } finally { adding = false; }
     }
 
     function closePopup() {

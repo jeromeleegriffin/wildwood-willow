@@ -83,6 +83,27 @@
       updateToolVisibility();
       window.addEventListener('hashchange', updateToolVisibility);
       window.addEventListener('pageshow', updateToolVisibility);
+      function addStockSlider() {
+        if (!/^#\/collections\/products\/(?:new|entries\/)/.test(location.hash)) return;
+        const input = document.querySelector('input[aria-valuemin="0"][aria-valuemax="9999"],input[type="number"][min="0"][max="9999"]');
+        const control = input?.closest('.number-input') || input;
+        if (!control || control.nextElementSibling?.dataset.wwStockSlider) return;
+        const slider = document.createElement('input');
+        slider.type = 'range'; slider.min = '0'; slider.max = '9999'; slider.step = '1';
+        slider.value = input.value || '0'; slider.disabled = input.disabled || input.readOnly;
+        slider.dataset.wwStockSlider = 'true';
+        slider.setAttribute('aria-label', 'Quantity Available slider');
+        slider.style.cssText = 'display:block;width:100%;margin:8px 0;accent-color:#3e4f32';
+        slider.addEventListener('input', () => {
+          input.value = slider.value;
+          input.dispatchEvent(new Event('input', {bubbles:true}));
+          input.dispatchEvent(new Event('change', {bubbles:true}));
+        });
+        input.addEventListener('input', () => { slider.value = input.value || '0'; });
+        control.after(slider);
+      }
+      new MutationObserver(addStockSlider).observe(document.body,{childList:true,subtree:true});
+      window.addEventListener('hashchange', addStockSlider);
       let requestId = 0;
       live.addEventListener('click', () => {
         // Live Site always shows the visitor experience, even in this browser tab.
