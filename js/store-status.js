@@ -12,6 +12,47 @@
   let state = {...defaults};
   let ready = false;
   let promise = null;
+  const previewKey = 'ww-admin-preview-until';
+  function previewActive() {
+    try {
+      const expires = Number(sessionStorage.getItem(previewKey) || 0);
+      if (!expires || expires <= Date.now()) {
+        sessionStorage.removeItem(previewKey);
+        return false;
+      }
+      return true;
+    } catch (error) { return false; }
+  }
+  function stopPreview() {
+    try { sessionStorage.removeItem(previewKey); } catch (error) {}
+    location.reload();
+  }
+  function showPreviewBar() {
+    if (document.getElementById('ww-admin-preview-bar')) return;
+    addStyles();
+    const bar = document.createElement('div');
+    bar.id = 'ww-admin-preview-bar';
+    bar.setAttribute('role', 'status');
+    const status = document.createElement('span');
+    status.textContent = 'ADMIN PREVIEW · Site is closed to visitors';
+    const back = document.createElement('a');
+    back.href = '/admin/';
+    back.textContent = 'Admin';
+    const exit = document.createElement('button');
+    exit.type = 'button';
+    exit.textContent = 'Exit preview';
+    exit.addEventListener('click', stopPreview);
+    bar.append(status, back, exit);
+    document.body.append(bar);
+  }
+  function disableOrderingButtons() {
+    document.querySelectorAll('.add-btn, .checkout-btn').forEach(button => {
+      button.disabled = true;
+      button.classList.add('ww-order-disabled');
+      button.setAttribute('aria-disabled', 'true');
+      button.title = 'Ordering unavailable while the website is temporarily closed';
+    });
+  }
 
   const addStyles = () => {
     if (document.getElementById('ww-store-availability-css')) return;
@@ -63,6 +104,24 @@
       .ww-orders-notice--hero .ww-orders-details {
         display: -webkit-box; -webkit-line-clamp: 2;
         -webkit-box-orient: vertical; overflow: hidden;
+      }
+      #ww-admin-preview-bar {
+        position: fixed !important; z-index: 2147483646 !important;
+        left: 50% !important; transform: translateX(-50%) !important;
+        bottom: max(7px, env(safe-area-inset-bottom)) !important;
+        width: min(calc(100% - 12px), 410px) !important;
+        display: flex !important; justify-content: space-between !important;
+        align-items: center !important; gap: 8px !important;
+        background: #283825 !important; color: #fff !important;
+        padding: 10px 9px !important; border-radius: 9px !important;
+        box-shadow: 0 5px 18px #0004 !important;
+        font: normal 12px/1.2 system-ui, sans-serif !important;
+      }
+      #ww-admin-preview-bar span { flex: 1; }
+      #ww-admin-preview-bar a, #ww-admin-preview-bar button {
+        border: 1px solid #e8e0d8; background: #fffdf8; color: #283825;
+        font: bold 12px system-ui, sans-serif; padding: 6px 8px;
+        border-radius: 7px; text-decoration: none; white-space: nowrap; cursor: pointer;
       }
       button.ww-order-disabled { opacity: .55; cursor: not-allowed !important; }
     `;
@@ -147,7 +206,15 @@
     const notice = document.getElementById('ww-order-notice');
     if (state.mode === 'temporarily_closed') {
       if (notice) notice.remove();
-      showClosed();
+      if (previewActive()) {
+        if (layer) layer.remove();
+        showPreviewBar();
+        disableOrderingButtons();
+      } else {
+        const previewBar = document.getElementById('ww-admin-preview-bar');
+        if (previewBar) previewBar.remove();
+        showClosed();
+      }
     } else if (state.mode === 'pause_orders') {
       if (layer) layer.remove();
       pauseOrdering();
@@ -237,7 +304,9 @@
   window.WWStoreAvailability = {
     load: loadStatus,
     isOrderingAllowed: () => ready && state.mode === 'open',
-    mode: () => state.mode
+    mode: () => state.mode,
+    isPreview: previewActive,
+    exitPreview: stopPreview
   };
 
   window.addEventListener('pageshow', event => { if (event.persisted) loadStatus(true); });
