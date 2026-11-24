@@ -17,10 +17,10 @@
     .tabs { display: flex; gap: 3px; padding: 4px 6px; background: #faf8f5; overflow-x: auto; flex-shrink: 0; }
     .tabs button { border: 1px solid #e8e0d8; background: white; border-radius: 10px; padding: 3px 8px; font-size: 0.65rem; color: var(--olive); white-space: nowrap; }
     .tabs button.active { background: var(--terracotta); color: white; }
-    .shop-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; padding: 6px; align-content: start; overflow: hidden; }
-    .shop-card { background: white; border: 1px solid #e8e0d8; border-radius: 6px; padding: 4px; text-align: center; }
+    .shop-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; grid-auto-rows: max-content; gap: 4px; padding: 6px; align-content: start; overflow-y: auto; }
+    .shop-card { display:block; min-width:0; background: white; border: 1px solid #e8e0d8; border-radius: 6px; padding: 4px; text-align: center; text-decoration:none; color:inherit; cursor:pointer; }
     .shop-card img { width: 100%; height: 48px; object-fit: cover; border-radius: 4px; background: #f9f6f2; }
-    .shop-card h3 { font-size: 0.6rem; margin: 2px 0 1px; line-height: 1.1; }
+    .shop-card h3 { font-size: 0.6rem; margin: 2px 0 1px; line-height: 1.1; overflow-wrap:anywhere; }
     .shop-card p { font-size: 0.5rem; color: #555; line-height: 1.1; }
     .pager { display: flex; justify-content: center; gap: 6px; padding: 4px; background: #faf8f5; flex-shrink: 0; }
     .pager button { border: 1px solid #e8e0d8; background: white; border-radius: 6px; padding: 3px 8px; font-size: 0.65rem; }
@@ -99,13 +99,36 @@
       const pageItems = items.slice(start, start + perPage);
 
       const grid = document.getElementById('shop-grid');
-      grid.innerHTML = pageItems.map(p => `
-        <div class="shop-card">
-          <img src="${window.WWCatalog.image(p.image)}" alt="" onerror="this.style.background='#f9f6f2'">
-          <h3>${p.title || ''}</h3>
-          <p>${p.description || ''}</p>
-        </div>
-      `).join('') || '<p style="grid-column:1/-1;text-align:center;color:#888;font-size:0.7rem;">None yet.</p>';
+      grid.replaceChildren();
+      if (!pageItems.length) {
+        const empty = document.createElement('p');
+        empty.style.cssText = 'grid-column:1/-1;text-align:center;color:#777;font-size:.78rem;padding:20px 4px;';
+        empty.textContent = 'No items in this category yet.';
+        grid.append(empty);
+      }
+      pageItems.forEach(item => {
+        const link = document.createElement('a');
+        link.className = 'shop-card';
+        link.href = mode === 'products'
+          ? 'product.html?p=' + encodeURIComponent(item.slug) + '&type=products'
+          : 'category.html?category=Services';
+        link.setAttribute('aria-label', mode === 'products'
+          ? 'View product: ' + (item.title || 'Product')
+          : 'Learn about services: ' + (item.title || 'Service'));
+        if (item.image) {
+          const img = document.createElement('img');
+          img.src = window.WWCatalog.image(item.image);
+          img.alt = '';
+          img.onerror = () => { img.remove(); };
+          link.append(img);
+        }
+        const title = document.createElement('h3');
+        title.textContent = item.title || 'Item';
+        const description = document.createElement('p');
+        description.textContent = item.description || '';
+        link.append(title, description);
+        grid.append(link);
+      });
 
       const pager = document.getElementById('pager');
       pager.innerHTML = totalPages > 1 ? `
