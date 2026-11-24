@@ -178,7 +178,7 @@ body {
   line-height: 1;
   color: var(--olive);
   font-weight: normal;
-  margin: 90px 0 0 8px;
+  margin: 70px 0 0 8px;
   width: max-content;
   max-width: 100%;
 }
@@ -190,7 +190,7 @@ body {
   border-radius: 5px;
   box-shadow: none;
 }
-.hero p { font-size: 0.48rem; margin: 16px 0 4px; line-height: 1.2; max-width: 112px; }
+.hero p { font-size: 0.48rem; margin: 10px 0 4px; line-height: 1.2; max-width: 112px; }
 .hero-logo {
   flex: 0 0 90px;
   z-index: 2;
@@ -236,7 +236,7 @@ body {
 }
 
 .section {
-  padding: 2px 2px 4px;
+  padding: 1px 2px 2px;
   text-align: center;
   flex: 1 1 0;
   display: flex;
@@ -314,7 +314,7 @@ body {
 }
 .card h3 { font-size: 0.58rem; margin-bottom: 1px; line-height: 1.1; font-weight: bold; }
 .price { font-size: 0.55rem; color: var(--terracotta); font-weight: bold; margin-bottom: 1px; }
-.card p { font-size: 0.45rem; color: #555; line-height: 1.15; flex: 1; padding-right: 2px; word-break: break-word; }
+.card p { font-size: 0.44rem; color: #555; line-height: 1.12; flex: 1; padding-right: 1px; word-break: break-word; }
 .arrow {
   position: absolute;
   bottom: 3px;
