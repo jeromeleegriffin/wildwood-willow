@@ -111,6 +111,17 @@ body {
   align-items: center;
   gap: 8px;
 }
+.contact-link,
+.contact-link:visited {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.contact-link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
 .icon-circle {
   width: 32px;
   height: 32px;
