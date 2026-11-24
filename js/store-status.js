@@ -88,7 +88,12 @@
     phone.href = 'tel:5074301250';
     phone.textContent = 'Call 507-430-1250';
     phone.style.cssText = 'display:inline-block;margin-top:12px;color:#3e4f32;font-weight:bold;';
-    card.append(eyebrow,heading,message,phone);
+    const admin = document.createElement('a');
+    admin.href = '/admin/';
+    admin.textContent = 'Admin Login';
+    admin.setAttribute('aria-label', 'Open the website administration panel');
+    admin.style.cssText = 'display:block;width:max-content;margin:23px auto 0;padding:9px 12px;color:#65715d;font:normal .8rem Georgia,serif;text-decoration:underline;text-underline-offset:3px;';
+    card.append(eyebrow,heading,message,phone,admin);
     layer.append(card);
     document.body.append(layer);
   }
