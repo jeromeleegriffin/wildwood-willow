@@ -46,6 +46,7 @@
     .popup-btns .cart-btn { background: #c17a4a; color: white; }
     .popup-btns .continue-btn { background: #f0ebe4; color: #3e4f32; }
   </style>
+  <script src="/js/store-status.js?v=1" defer></script>
 </head>
 <body>
   <div class="product-page">
@@ -95,6 +96,7 @@
     }
 
     function addToCart() {
+      if (!window.WWStoreAvailability || !window.WWStoreAvailability.isOrderingAllowed()) return;
       if (!window.currentProduct) return;
       let cart = JSON.parse(localStorage.getItem('ww-cart') || '[]');
       const existing = cart.find(i => i.slug === window.currentSlug);
