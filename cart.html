@@ -48,8 +48,8 @@
     function parsePrice(price) {
       if (typeof price === 'number') return Number.isFinite(price) && price >= 0 ? price : null;
       const text = String(price == null ? '' : price).trim();
-      if (!/^\\$?\\s*\\d+(?:,\\d{3})*(?:\\.\\d{1,2})?$/.test(text)) return null;
-      const amount = Number(text.replace(/[$,\\s]/g, ''));
+      if (!/^\$?\s*\d+(?:,\d{3})*(?:\.\d{1,2})?$/.test(text)) return null;
+      const amount = Number(text.replace(/[$,\s]/g, ''));
       return Number.isFinite(amount) && amount >= 0 ? amount : null;
     }
     function money(value) {
