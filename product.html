@@ -46,7 +46,7 @@
     .popup-btns .cart-btn { background: #c17a4a; color: white; }
     .popup-btns .continue-btn { background: #f0ebe4; color: #3e4f32; }
   </style>
-  <script src="/js/store-status.js?v=1" defer></script>
+  <script src="js/store-status.js?v=1" defer></script>
 </head>
 <body>
   <div class="product-page">
@@ -76,7 +76,7 @@
 
     async function loadProduct() {
       if (!slug) return;
-      const res = await fetch(`/content/${folder}/${slug}.md?t=` + Date.now());
+      const res = await fetch(`content/${folder}/${slug}.md?t=` + Date.now());
       if (!res.ok) return;
       const text = await res.text();
       const match = text.match(/---\n([\s\S]*?)\n---/);
@@ -89,7 +89,7 @@
       document.getElementById('product-title').textContent = data.title || '';
       document.getElementById('product-price').textContent = data.price || '';
       document.getElementById('product-desc').textContent = data.description || '';
-      if (data.image) document.getElementById('product-img').src = data.image;
+      if (data.image) document.getElementById('product-img').src = data.image.replace(/^\/images\//, 'images/');
       document.title = (data.title || 'Product') + ' - Wildwood & Willow';
       window.currentProduct = data;
       window.currentSlug = slug;
@@ -107,7 +107,7 @@
           slug: window.currentSlug,
           title: window.currentProduct.title,
           price: window.currentProduct.price,
-          image: window.currentProduct.image,
+          image: (window.currentProduct.image || '').replace(/^\\/images\\//, 'images/'),
           qty: 1
         });
       }
