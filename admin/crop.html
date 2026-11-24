@@ -126,7 +126,8 @@ button:disabled{opacity:.48;cursor:not-allowed}
     draw();
     const [rw,rh]=ratio.value.split('/').map(Number);
     const output=document.createElement('canvas');
-    output.width=1200;output.height=Math.round(1200*rh/rw);
+    output.width=ratio.value === '2/1' ? 800 : 1200;
+    output.height=Math.round(output.width*rh/rw);
     const outputCtx=output.getContext('2d');
     outputCtx.imageSmoothingQuality='high';
     outputCtx.drawImage(canvas,0,0,output.width,output.height);
@@ -134,7 +135,7 @@ button:disabled{opacity:.48;cursor:not-allowed}
       if(!blob){status.textContent='Image export failed. Please try again.';return}
       const url=URL.createObjectURL(blob),a=document.createElement('a');
       a.href=url;a.download=name+'-cropped.webp';a.click();
-      status.textContent='Cropped photo saved. Upload it in the product Image field, then save the entry.';
+      status.textContent='Thumbnail saved. Upload this cropped image into Card Thumbnail in the product editor. Keep your original in Full Product Photo.';
       setTimeout(()=>URL.revokeObjectURL(url),30000);
     },'image/webp',.9);
   });
