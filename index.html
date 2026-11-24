@@ -59,6 +59,18 @@
     </section>
   </div>
 
+  <div class="service-overlay" id="service-overlay" hidden>
+    <section class="service-dialog" role="dialog" aria-modal="true" aria-labelledby="service-dialog-title" aria-describedby="service-dialog-description" tabindex="-1">
+      <button type="button" class="service-close" id="service-close" aria-label="Close service information">×</button>
+      <p class="service-eyebrow">WILDWOOD &amp; WILLOW SERVICES</p>
+      <h2 id="service-dialog-title"></h2>
+      <p id="service-dialog-description"></p>
+      <p id="service-dialog-details"></p>
+      <p class="service-contact">For questions or availability, call <a href="tel:5074301250" id="service-phone">507-430-1250</a>.</p>
+      <button type="button" class="service-dismiss" id="service-dismiss">Close</button>
+    </section>
+  </div>
+
   <nav class="categories">
     <div><span>💊</span>CAPSULES</div>
     <div><span>💧</span>TINCTURES</div>
@@ -115,14 +127,18 @@
           ? `<img src="${imgSrc}" alt="" onerror="this.style.background='#f9f6f2'">`
           : `<div class="placeholder">Admin: add photo</div>`;
         const priceHtml = item.price ? `<div class="price">${item.price}</div>` : '';
+        const isService = item.folder === 'services';
         const link = `product.html?p=${item.slug}&type=${item.folder}`;
+        const actionAttrs = isService
+          ? `role="button" tabindex="0" data-service-slug="${item.slug}" aria-label="Learn more about ${item.title || 'service'}"`
+          : `onclick="location.href='${link}'"`;
         return `
-          <div class="card" onclick="location.href='${link}'">
+          <div class="card" ${actionAttrs}>
             ${imgHtml}
             <h3>${item.title || ''}</h3>
             ${priceHtml}
             <p>${item.description || ''}</p>
-            <span class="arrow">→</span>
+            <span class="arrow">${isService ? 'ⓘ' : '→'}</span>
           </div>
         `;
       }).join('');
@@ -142,8 +158,47 @@
       renderCards(products, 'product-cards');
 
       const services = await loadFolder('services');
+      window.wwServices = Object.fromEntries(services.map(service => [service.slug, service]));
       renderCards(services, 'service-cards');
     }
+
+    const serviceOverlay = document.getElementById('service-overlay');
+    let previousFocus = null;
+    function openService(slug) {
+      const service = window.wwServices && window.wwServices[slug];
+      if (!service) return;
+      previousFocus = document.activeElement;
+      document.getElementById('service-dialog-title').textContent = service.title || 'Service';
+      document.getElementById('service-dialog-description').textContent = service.description || '';
+      const details = document.getElementById('service-dialog-details');
+      details.textContent = service.details || 'Contact us to learn more about this service and what to expect during a visit.';
+      document.getElementById('service-phone').textContent = document.getElementById('phone').textContent;
+      serviceOverlay.hidden = false;
+      document.getElementById('service-close').focus();
+    }
+    function closeService() {
+      serviceOverlay.hidden = true;
+      if (previousFocus && previousFocus.isConnected) previousFocus.focus();
+    }
+    document.getElementById('service-cards').addEventListener('click', event => {
+      const card = event.target.closest('[data-service-slug]');
+      if (card) openService(card.dataset.serviceSlug);
+    });
+    document.getElementById('service-cards').addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const card = event.target.closest('[data-service-slug]');
+      if (!card) return;
+      event.preventDefault();
+      openService(card.dataset.serviceSlug);
+    });
+    document.getElementById('service-close').addEventListener('click', closeService);
+    document.getElementById('service-dismiss').addEventListener('click', closeService);
+    serviceOverlay.addEventListener('click', event => {
+      if (event.target === serviceOverlay) closeService();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !serviceOverlay.hidden) closeService();
+    });
 
     init();
   </script>
