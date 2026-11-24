@@ -107,7 +107,7 @@
           slug: window.currentSlug,
           title: window.currentProduct.title,
           price: window.currentProduct.price,
-          image: (window.currentProduct.image || '').replace(/^\\/images\\//, 'images/'),
+          image: (window.currentProduct.image || '').replace(/^\/images\//, 'images/'),
           qty: 1
         });
       }
