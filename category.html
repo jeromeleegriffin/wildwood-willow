@@ -41,7 +41,7 @@ button.item{width:100%;font:inherit;cursor:pointer}
 .dialog a{display:block;color:var(--olive);white-space:nowrap;margin:8px 0 14px}
 @media(max-width:330px){.brand{font-size:.96rem}.categories a{font-size:.52rem}.photo{height:100px}}
 </style>
-  <script src="/js/store-status.js?v=1" defer></script>
+  <script src="js/store-status.js?v=1" defer></script>
 </head>
 <body>
 <header class="header">
@@ -100,7 +100,7 @@ button.item{width:100%;font:inherit;cursor:pointer}
  }
  async function load(folder,slug){
    try{
-     const res=await fetch('/content/'+folder+'/'+encodeURIComponent(slug)+'.md');
+     const res=await fetch('content/'+folder+'/'+encodeURIComponent(slug)+'.md');
      if(!res.ok)return null;
      const source=await res.text();
      const match=source.match(/^---\s*\n([\s\S]*?)\n---/);
@@ -141,7 +141,7 @@ button.item{width:100%;font:inherit;cursor:pointer}
      else card.href='product.html?p='+encodeURIComponent(item.slug)+'&type=products';
      const photo=document.createElement('div');photo.className='photo';
      if(item.image){
-       const img=document.createElement('img');img.src=item.image;img.alt='';
+       const img=document.createElement('img');img.src=item.image.replace(/^\\/images\\//,'images/');img.alt='';
        img.onerror=()=>{img.remove();photo.textContent='Photo coming soon'};
        photo.append(img);
      }else photo.textContent='Photo coming soon';
