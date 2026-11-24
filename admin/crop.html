@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crop Product Photo | Wildwood & Willow</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#33462b;background:#f5f0e8}
+*{box-sizing:border-box}
+body{margin:0;padding:14px;max-width:680px;margin-inline:auto}
+h1{font:600 1.25rem Georgia,serif;margin:12px 0 8px}
+p{font-size:.88rem;line-height:1.45}
+a{color:#33462b}
+.panel{background:#fffdf9;border:1px solid #ded2c5;border-radius:13px;padding:13px;margin:12px 0}
+label{font-weight:600;display:block;margin:9px 0 6px}
+select,input[type=file],input[type=range],button{font:inherit}
+input[type=file]{max-width:100%}
+select{padding:10px;border:1px solid #b6afa1;border-radius:8px;width:100%;background:#fff}
+input[type=range]{width:100%;accent-color:#3e4f32}
+#preview{display:block;width:100%;height:auto;aspect-ratio:4/3;background:#eee7dd;touch-action:none;border-radius:9px;cursor:grab}
+#preview:active{cursor:grabbing}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+button{background:#3e4f32;color:white;border:0;border-radius:8px;padding:11px 13px;cursor:pointer}
+button.secondary{background:#ece6dc;color:#33462b;border:1px solid #c2b7a5}
+button:disabled{opacity:.48;cursor:not-allowed}
+.note{font-size:.81rem;color:#5c574e}
+</style>
+</head>
+<body>
+<p><a href="./">← Back to Admin</a></p>
+<h1>Crop & Center Product Photos</h1>
+<p>Choose a photo, select the shape, then <strong>drag to center the product</strong> and use the zoom control. Your original photo is never changed.</p>
+<div class="panel">
+<label for="file">1. Choose photo</label>
+<input id="file" type="file" accept="image/*">
+<label for="ratio">2. Choose display shape</label>
+<select id="ratio">
+<option value="4/3">4:3 landscape, recommended for product pages</option>
+<option value="2/1">2:1 wide, for the small featured cards</option>
+<option value="1/1">1:1 square</option>
+<option value="3/4">3:4 portrait</option>
+</select>
+<label for="zoom">3. Zoom and position</label>
+<input id="zoom" type="range" min="1" max="3" step=".01" value="1" aria-label="Zoom photo">
+<canvas id="preview" width="800" height="600" aria-label="Crop preview; drag to move photo"></canvas>
+<div class="actions">
+<button id="reset" class="secondary" type="button">Center Photo</button>
+<button id="save" type="button" disabled>Save Cropped Photo</button>
+</div>
+<p class="note" id="status">Select a photo to begin. Nothing is uploaded automatically.</p>
+</div>
+<div class="panel">
+<p><strong>After saving:</strong> Return to Admin → Products (or Services), open the item, choose the <strong>Image</strong> field, upload the cropped photo, and save the product. The storefront will then use the new image.</p>
+</div>
+<script>
+(() => {
+  const canvas=document.getElementById('preview'),ctx=canvas.getContext('2d');
+  const file=document.getElementById('file'),ratio=document.getElementById('ratio');
+  const zoom=document.getElementById('zoom'),save=document.getElementById('save');
+  const status=document.getElementById('status');
+  let photo=null,name='product',offsetX=0,offsetY=0,drag=null;
+  function dimensions(){
+    const [w,h]=ratio.value.split('/').map(Number);
+    canvas.width=800;
+    canvas.height=Math.round(800*h/w);
+    canvas.style.aspectRatio=w+'/'+h;
+  }
+  function bounds(){
+    if(!photo)return null;
+    const scale=Math.max(canvas.width/photo.naturalWidth,canvas.height/photo.naturalHeight)*Number(zoom.value);
+    const w=photo.naturalWidth*scale,h=photo.naturalHeight*scale;
+    const extraX=Math.max(0,(w-canvas.width)/2),extraY=Math.max(0,(h-canvas.height)/2);
+    offsetX=Math.min(extraX,Math.max(-extraX,offsetX));
+    offsetY=Math.min(extraY,Math.max(-extraY,offsetY));
+    return {w,h,x:(canvas.width-w)/2+offsetX,y:(canvas.height-h)/2+offsetY};
+  }
+  function draw(){
+    dimensions();
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#eee7dd';ctx.fillRect(0,0,canvas.width,canvas.height);
+    const b=bounds();
+    if(!b){
+      ctx.fillStyle='#655d54';ctx.textAlign='center';ctx.font='27px system-ui';
+      ctx.fillText('Choose a product photo',canvas.width/2,canvas.height/2);
+      return;
+    }
+    ctx.drawImage(photo,b.x,b.y,b.w,b.h);
+  }
+  function reset(){offsetX=0;offsetY=0;zoom.value='1';draw()}
+  file.addEventListener('change',()=>{
+    const source=file.files&&file.files[0];
+    if(!source)return;
+    if(!source.type.startsWith('image/')){status.textContent='Please choose an image file.';return}
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        photo=img;name=source.name.replace(/\.[^.]+$/,'').replace(/[^a-z0-9_-]/gi,'-')||'product';
+        reset();save.disabled=false;
+        status.textContent='Original: '+img.naturalWidth+' × '+img.naturalHeight+' pixels. Drag the preview to recenter.';
+      };
+      img.onerror=()=>status.textContent='Could not open that image.';
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(source);
+  });
+  ratio.addEventListener('change',()=>{offsetX=0;offsetY=0;draw()});
+  zoom.addEventListener('input',draw);
+  document.getElementById('reset').addEventListener('click',reset);
+  canvas.addEventListener('pointerdown',e=>{
+    if(!photo)return;
+    drag={id:e.pointerId,x:e.clientX,y:e.clientY};
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove',e=>{
+    if(!drag||drag.id!==e.pointerId)return;
+    const rect=canvas.getBoundingClientRect();
+    offsetX+=(e.clientX-drag.x)*canvas.width/rect.width;
+    offsetY+=(e.clientY-drag.y)*canvas.height/rect.height;
+    drag.x=e.clientX;drag.y=e.clientY;draw();
+  });
+  canvas.addEventListener('pointerup',()=>drag=null);
+  canvas.addEventListener('pointercancel',()=>drag=null);
+  save.addEventListener('click',()=>{
+    if(!photo)return;
+    draw();
+    const [rw,rh]=ratio.value.split('/').map(Number);
+    const output=document.createElement('canvas');
+    output.width=1200;output.height=Math.round(1200*rh/rw);
+    const outputCtx=output.getContext('2d');
+    outputCtx.imageSmoothingQuality='high';
+    outputCtx.drawImage(canvas,0,0,output.width,output.height);
+    output.toBlob(blob=>{
+      if(!blob){status.textContent='Image export failed. Please try again.';return}
+      const url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url;a.download=name+'-cropped.webp';a.click();
+      status.textContent='Cropped photo saved. Upload it in the product Image field, then save the entry.';
+      setTimeout(()=>URL.revokeObjectURL(url),30000);
+    },'image/webp',.9);
+  });
+  draw();
+})();
+</script>
+</body>
+</html>
