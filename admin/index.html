@@ -1,27 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Content Manager</title>
+  <title>Wildwood & Willow Admin</title>
+  <style>
+    /* Site controls stay above the editor rather than covering bottom CMS navigation. */
+    #ww-site-links {
+      position: fixed;
+      top: max(8px, env(safe-area-inset-top));
+      right: 8px;
+      display: flex;
+      gap: 6px;
+      z-index: 2147483640;
+      max-width: calc(100vw - 16px);
+    }
+    #ww-site-links button {
+      border: 1px solid #c5d4bd;
+      border-radius: 20px;
+      background: #fffdf8;
+      color: #3e4f32;
+      font: 600 12px system-ui, sans-serif;
+      padding: 8px 10px;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.13);
+    }
+    #ww-site-links #ww-preview-site { background: #3e4f32; color: #fff; }
+    #ww-site-links button:focus-visible { outline: 2px solid #c17a4a; outline-offset: 3px; }
+    #ww-preview-site[hidden] { display: none !important; }
+  </style>
 </head>
 <body>
-  <button type="button" id="ww-preview-site" title="Preview the public site without reopening it to visitors">View Site (Admin Preview)</button>
-  <style>
-    #ww-preview-site {
-      position: fixed; right: 12px; bottom: max(12px, env(safe-area-inset-bottom));
-      z-index: 2147483640; border: 1px solid #c5d4bd; border-radius: 24px;
-      background: #3e4f32; color: white; font: 600 13px system-ui, sans-serif;
-      padding: 11px 14px; box-shadow: 0 4px 14px #0003; cursor: pointer;
-    }
-    #ww-preview-site:focus-visible { outline: 3px solid #c17a4a; outline-offset: 3px; }
-  </style>
+  <nav id="ww-site-links" aria-label="View website">
+    <button type="button" id="ww-live-site" title="View the public website as a visitor sees it">Live Site</button>
+    <button type="button" id="ww-preview-site" hidden title="View the storefront while the public website is temporarily closed">Admin Preview</button>
+  </nav>
   <script>
-    document.getElementById('ww-preview-site').addEventListener('click', () => {
-      // Temporary, per-tab display preview. Admin editing still requires GitHub login.
-      sessionStorage.setItem('ww-admin-preview-until', String(Date.now() + 30 * 60 * 1000));
-      window.location.assign('../index.html');
-    });
+    (() => {
+      const previewKey = 'ww-admin-preview-until';
+      const live = document.getElementById('ww-live-site');
+      const preview = document.getElementById('ww-preview-site');
+      let requestId = 0;
+      live.addEventListener('click', () => {
+        // Live Site always shows the visitor experience, even in this browser tab.
+        try { sessionStorage.removeItem(previewKey); } catch (error) {}
+        location.assign('../index.html');
+      });
+      preview.addEventListener('click', () => {
+        if (preview.hidden) return;
+        try { sessionStorage.setItem(previewKey, String(Date.now() + 30 * 60 * 1000)); }
+        catch (error) { return; }
+        location.assign('../index.html');
+      });
+
+      async function updatePreviewVisibility() {
+        const id = ++requestId;
+        preview.hidden = true;
+        try {
+          const url = 'https://api.github.com/repos/jeromeleegriffin/wildwood-willow/contents/content/settings/store-status.json?ref=main&fresh=' + Date.now();
+          const res = await fetch(url, { cache:'no-store', headers:{Accept:'application/vnd.github+json'} });
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data.encoding !== 'base64' || !data.content) return;
+          const bytes = Uint8Array.from(atob(data.content.replace(/\s/g, '')), char => char.charCodeAt(0));
+          const status = JSON.parse(new TextDecoder().decode(bytes));
+          if (id === requestId) preview.hidden = status.mode !== 'temporarily_closed';
+        } catch (error) {
+          // Keep the regular Live Site button available when status cannot be checked.
+        }
+      }
+      updatePreviewVisibility();
+      window.addEventListener('pageshow', updatePreviewVisibility);
+      window.addEventListener('focus', updatePreviewVisibility);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) updatePreviewVisibility();
+      });
+    })();
   </script>
   <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
 </body>
