@@ -90,7 +90,7 @@ button.item{width:100%;font:inherit;cursor:pointer}
  async function slugs(folder){
    const fallback=folder==='services'?knownServices:knownProducts;
    try{
-     const res=await fetch('https://api.github.com/repos/jeromeleegriffin/wildwood-willow/contents/content/'+folder,
+     const res=await fetch('https://api.github.com/repos/Wb-2026/wildwood-willow/contents/content/'+folder,
        {headers:{Accept:'application/vnd.github+json'}});
      if(!res.ok)throw Error('Directory unavailable');
      const files=await res.json();
@@ -141,7 +141,7 @@ button.item{width:100%;font:inherit;cursor:pointer}
      else card.href='product.html?p='+encodeURIComponent(item.slug)+'&type=products';
      const photo=document.createElement('div');photo.className='photo';
      if(item.image){
-       const img=document.createElement('img');img.src=item.image.replace(/^\\/images\\//,'images/');img.alt='';
+       const img=document.createElement('img');img.src=item.image.replace(/^\/images\//,'images/');img.alt='';
        img.onerror=()=>{img.remove();photo.textContent='Photo coming soon'};
        photo.append(img);
      }else photo.textContent='Photo coming soon';
