@@ -118,10 +118,20 @@
     function addToCart() {
       if (!window.WWStoreAvailability || !window.WWStoreAvailability.isOrderingAllowed()) return;
       if (!window.currentProduct || !window.productPriceReady) return;
-      let cart = JSON.parse(localStorage.getItem('ww-cart') || '[]');
+      let cart = [];
+      try {
+        const saved = JSON.parse(localStorage.getItem('ww-cart') || '[]');
+        if (Array.isArray(saved)) cart = saved.filter(x => x && typeof x === 'object');
+      } catch (error) {
+        // Recover from damaged or outdated saved cart data.
+      }
       const existing = cart.find(i => i.slug === window.currentSlug);
       if (existing) {
-        existing.qty = (existing.qty || 1) + 1;
+        const currentQty = Math.max(1, Math.floor(Number(existing.qty) || 1));
+        existing.qty = Math.min(99, currentQty + 1);
+        existing.title = window.currentProduct.title;
+        existing.price = window.currentProduct.price;
+        existing.image = window.currentProduct.image;
       } else {
         cart.push({
           slug: window.currentSlug,
@@ -131,7 +141,14 @@
           qty: 1
         });
       }
-      localStorage.setItem('ww-cart', JSON.stringify(cart));
+      try {
+        localStorage.setItem('ww-cart', JSON.stringify(cart));
+      } catch (error) {
+        document.getElementById('popup-item').textContent = 'Your browser could not save this item. Please check storage settings and try again.';
+        document.getElementById('popup').classList.add('show');
+        document.querySelector('#popup h3').textContent = 'Cart not saved';
+        return;
+      }
       document.getElementById('popup-item').textContent = window.currentProduct.title + ' was added to your cart.';
       document.getElementById('popup').classList.add('show');
     }
