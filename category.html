@@ -62,6 +62,21 @@ nav.categories{flex:none;margin:3px 0 7px}
 .pager button{min-width:48px;min-height:36px;background:#fffdf8;border:1px solid #d9ccbb;border-radius:10px;color:var(--olive);font:inherit;font-weight:bold;cursor:pointer}
 .pager button:disabled{opacity:.35;cursor:default}.pager[hidden]{display:none}
 @media(max-height:500px){.header{padding:3px}.subtitle,.intro{display:none}.back{padding:3px 10px}h1{font-size:1rem;margin:2px} .categories a{padding:2px}.categories a span{font-size:.9rem;margin:0}nav.categories{margin:2px 0}#ww-order-notice{font-size:.65rem!important;padding:3px!important}.photo{max-height:40%;margin:4px}.item-info{padding:2px 5px}.item h2{font-size:.8rem}.item p{font-size:.68rem;-webkit-line-clamp:2}.action{font-size:.65rem}.pager{padding:2px}.pager button{min-height:28px}}
+/* Category browsing: full copy and uncropped photos, with compact two-row pages. */
+body.product-catalog{max-width:1100px}
+.product-catalog #items{grid-template-rows:repeat(2,minmax(0,1fr));gap:8px}
+.product-catalog .photo{aspect-ratio:auto;height:clamp(52px,12dvh,110px);max-height:none;flex:1 1 52px;margin:5px 5px 2px}
+.product-catalog .photo img.product-thumbnail{object-fit:contain}
+.product-catalog .item-info{flex:0 0 auto;overflow:visible;padding:3px 7px 6px}
+.product-catalog .item h2{font-size:.94rem;line-height:1.12;margin-bottom:3px}
+.product-catalog .item .price{margin-bottom:2px}
+.product-catalog .item p{display:block;overflow:visible;-webkit-line-clamp:unset;font-size:.875rem;line-height:1.18;flex:none}
+.product-catalog .action{font-size:.875rem;margin-top:3px;padding-top:2px}
+@media(min-width:760px){.product-catalog #items{grid-template-columns:repeat(3,minmax(0,1fr))}.product-catalog .photo{height:clamp(70px,17dvh,170px)}.product-catalog .item h2{font-size:1.1rem}.product-catalog .item p{font-size:1rem}}
+/* If full copy cannot fit, let the page grow rather than hide information. */
+body.product-catalog.catalog-overflow{height:auto;min-height:100dvh;overflow:visible}
+html:has(body.catalog-overflow){height:auto;overflow:auto}
+.catalog-overflow main{flex:none}.catalog-overflow #items{flex:none;grid-template-rows:auto auto;overflow:visible}.catalog-overflow .item{max-height:none}.catalog-overflow .photo{flex:none;height:90px}
 </style>
   <script src="/js/store-status.js?v=7" defer></script>
   <script src="/js/catalog.js?v=2"></script>
@@ -109,7 +124,10 @@ nav.categories{flex:none;margin:3px 0 7px}
  const list=document.getElementById('items');
  const pager=document.getElementById('catalog-pager'),prev=document.getElementById('prev-page'),next=document.getElementById('next-page');
  let allItems=[],page=0;
- const perPage=2;
+ let perPage=services?2:(matchMedia('(min-width:760px)').matches?6:4);
+ if(!services)document.body.classList.add('product-catalog');
+ function resizeCatalog(){const first=page*perPage;perPage=services?2:(matchMedia('(min-width:760px)').matches?6:4);page=Math.floor(first/perPage);render(allItems)}
+ window.addEventListener('resize',resizeCatalog);
  function changePage(delta){page=Math.max(0,Math.min(Math.ceil(allItems.length/perPage)-1,page+delta));render(allItems)}
  prev.addEventListener('click',()=>changePage(-1));next.addEventListener('click',()=>changePage(1));
   // Horizontal swipes change pages; ordinary taps still open the selected item.
@@ -184,6 +202,10 @@ nav.categories{flex:none;margin:3px 0 7px}
      const action=document.createElement('span');action.className='action';action.textContent=services?'More information':'View product';info.append(action);
      card.append(photo,info);list.append(card);
    })
+   if(!services){requestAnimationFrame(()=>{
+     const clipped=[...list.querySelectorAll('.item')].some(card=>card.scrollHeight>card.clientHeight+1);
+     document.body.classList.toggle('catalog-overflow',clipped);
+   })}
  }
  async function init(){
    const folder=services?'services':'products';

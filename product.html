@@ -108,8 +108,7 @@
     const folder = params.get('type') || 'products';
 
     async function loadProduct() {
-      if (!slug) return;
-      if (folder !== 'products') return;
+      if (!slug || folder !== 'products') { showProductError(); return; }
       const data = await window.WWCatalog.document('products', slug);
       if (!data) {
         document.getElementById('product-title').textContent = 'Product unavailable';
@@ -158,7 +157,6 @@
         noPhoto.classList.remove('is-visible');
       } else {
         photoFrame.hidden = true;
-        photoHint.hidden = true;
         noPhoto.classList.add('is-visible');
       }
       document.title = (data.title || 'Product') + ' - Wildwood & Willow';
@@ -230,7 +228,12 @@
       document.getElementById('popup').classList.remove('show');
     }
 
-    loadProduct();
+    function showProductError() {
+      document.getElementById('product-title').textContent = 'Product unavailable';
+      document.getElementById('product-desc').textContent = 'Please return to the catalog and try again.';
+      document.getElementById('add-to-cart-btn').disabled = true;
+    }
+    loadProduct().catch(showProductError);
   </script>
 </body>
 </html>
