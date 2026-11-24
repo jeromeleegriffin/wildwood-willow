@@ -132,7 +132,7 @@
     if (!response.ok) throw new Error('GitHub status HTTP ' + response.status);
     const data = await response.json();
     if (!data.content || data.encoding !== 'base64') throw new Error('Unexpected GitHub status format');
-    const raw = atob(data.content.replace(/\\s/g, ''));
+    const raw = atob(data.content);
     const bytes = Uint8Array.from(raw, char => char.charCodeAt(0));
     return JSON.parse(new TextDecoder().decode(bytes));
   }
@@ -144,8 +144,7 @@
   }
 
   async function loadStatus(force = false) {
-    if (promise && !force) return promise;
-    if (promise && force) return promise;
+    if (promise) return promise;
     promise = (async () => {
       let data = null;
       try {
@@ -174,11 +173,9 @@
 
   // Block direct Add to Cart calls and checkout clicks in pause mode, too.
   document.addEventListener('click', event => {
-    if (!ready || state.mode !== 'open') {
-    if (event.target.closest('.add-btn, .checkout-btn')) {
+    if ((!ready || state.mode !== 'open') && event.target.closest('.add-btn, .checkout-btn')) {
       event.preventDefault();
       event.stopImmediatePropagation();
-    }
     }
   }, true);
 
