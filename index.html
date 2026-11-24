@@ -139,7 +139,7 @@
       const ts = Date.now();
       container.innerHTML = items.map(item => {
         const hasImage = item.image && item.image.trim() !== '';
-        const imgSrc = hasImage ? item.image.replace(/^\\/images\\//, 'images/') + '?t=' + ts : '';
+        const imgSrc = hasImage ? item.image.replace(/^\/images\//, 'images/') + '?t=' + ts : '';
         const imgHtml = hasImage 
           ? `<img src="${imgSrc}" alt="" onerror="this.style.background='#f9f6f2'">`
           : `<div class="placeholder">Admin: add photo</div>`;
@@ -162,7 +162,7 @@
     }
 
     async function init() {
-      const contact = await loadMarkdown('/content/settings/contact.md');
+      const contact = await loadMarkdown('content/settings/contact.md');
       if (contact) {
         if (contact.phone) document.getElementById('phone').textContent = contact.phone;
         if (contact.address1) document.getElementById('address1').textContent = contact.address1;
