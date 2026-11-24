@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Categories | Wildwood & Willow Botanicals</title>
+<style>
+:root{--olive:#3e4f32;--terra:#c17a4a;--cream:#f5f0e8}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--cream);color:#333;font-family:Georgia,serif}
+body{max-width:420px;margin:0 auto}
+.header{position:relative;padding:18px 16px 10px;text-align:center;border-bottom:1px solid #e3dcd2}
+.brand{color:var(--olive);font-size:1.13rem;font-weight:bold;letter-spacing:1px}
+.subtitle{font-size:.67rem;letter-spacing:3px;color:var(--olive);margin-top:3px}
+.back{display:inline-block;padding:12px 16px;color:var(--olive);text-decoration:none;font-size:.9rem}
+main{padding:0 13px 26px}
+h1{text-align:center;color:var(--olive);font-size:1.45rem;letter-spacing:1px;margin:10px 0 5px}
+.intro{text-align:center;color:#665f57;font-size:.83rem;margin:0 0 16px}
+nav.categories{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;margin:7px 0 12px}
+.categories a{display:flex;flex-direction:column;align-items:center;padding:6px 1px;text-align:center;text-decoration:none;color:var(--olive);font-size:.6rem;border-radius:8px;min-width:0}
+.categories a span{font-size:1.3rem;margin-bottom:3px}
+.categories a[aria-current="page"]{background:#e4e5d9;font-weight:bold}
+#items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.item{display:flex;flex-direction:column;background:white;border:1px solid #e3d8ce;border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;text-align:left;min-width:0;box-shadow:0 2px 4px #3e4f3210}
+button.item{width:100%;font:inherit;cursor:pointer}
+.photo{height:125px;display:flex;justify-content:center;align-items:center;background:#f0ebe4;margin:7px;border-radius:7px;overflow:hidden;color:#817b75;font-size:.8rem;text-align:center}
+.photo img{width:100%;height:100%;object-fit:contain}
+.item-info{padding:3px 10px 12px}
+.item h2{font-size:1rem;line-height:1.14;color:var(--olive);margin:0 0 4px}
+.item .price{font-size:.9rem;color:var(--terra);font-weight:bold;margin-bottom:5px}
+.item p{font-size:.79rem;line-height:1.3;margin:3px 0}
+.action{display:block;font-size:.72rem;color:#976540;margin-top:9px;font-weight:bold}
+.message{grid-column:1/-1;padding:30px 15px;text-align:center;background:#fffcf8;border-radius:12px;color:var(--olive);line-height:1.5}
+.overlay[hidden]{display:none}
+.overlay{position:fixed;inset:0;z-index:1000;background:#283825;display:flex;justify-content:center;align-items:center;padding:18px}
+.dialog{background:#fffdf8;border-radius:16px;border:2px solid #d9ccbb;position:relative;padding:30px 22px 22px;width:100%;max-width:370px;max-height:85dvh;overflow-y:auto}
+.dialog h2{font-size:1.4rem;color:var(--olive);margin:0 34px 14px 0}
+.dialog p{line-height:1.45;font-size:.95rem}
+.dialog .close-x{position:absolute;right:8px;top:6px;background:none;border:0;font-size:2rem;color:var(--olive);padding:4px 10px}
+.dialog .close-btn{background:var(--olive);border:0;color:white;border-radius:26px;padding:12px;width:100%;font:inherit;margin-top:8px}
+.dialog a{display:block;color:var(--olive);white-space:nowrap;margin:8px 0 14px}
+@media(max-width:330px){.brand{font-size:.96rem}.categories a{font-size:.52rem}.photo{height:100px}}
+</style>
+</head>
+<body>
+<header class="header">
+ <div class="brand">WILDWOOD &amp; WILLOW</div>
+ <div class="subtitle">BOTANICALS</div>
+</header>
+<a class="back" href="index.html">← Back to Home</a>
+<main>
+ <h1 id="heading">Products</h1>
+ <p class="intro" id="intro">Browse our collection</p>
+ <nav class="categories" aria-label="Browse categories">
+  <a href="category.html?category=Capsules" data-category="Capsules"><span>💊</span>CAPSULES</a>
+  <a href="category.html?category=Tinctures" data-category="Tinctures"><span>💧</span>TINCTURES</a>
+  <a href="category.html?category=Teas" data-category="Teas"><span>🍵</span>TEAS</a>
+  <a href="category.html?category=Topicals" data-category="Topicals"><span>🌿</span>TOPICALS</a>
+  <a href="category.html?category=Services" data-category="Services"><span>🌱</span>SERVICES</a>
+ </nav>
+ <div id="items" aria-live="polite"><div class="message">Loading…</div></div>
+</main>
+<div class="overlay" id="overlay" hidden>
+ <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" tabindex="-1">
+  <button type="button" class="close-x" aria-label="Close">×</button>
+  <h2 id="dialog-title"></h2>
+  <p id="dialog-summary"></p>
+  <p id="dialog-details"></p>
+  <p>For questions or availability, call:</p>
+  <a id="dialog-phone" href="tel:5074301250">507-430-1250</a>
+  <button type="button" class="close-btn">Close</button>
+ </section>
+</div>
+<script>
+(function(){
+ const categories=['Capsules','Tinctures','Teas','Topicals','Services'];
+ const chosen=new URLSearchParams(location.search).get('category') || 'Capsules';
+ const category=categories.find(x=>x.toLowerCase()===chosen.toLowerCase()) || 'Capsules';
+ const services=category==='Services';
+ document.title=category+' | Wildwood & Willow Botanicals';
+ document.getElementById('heading').textContent=category;
+ document.getElementById('intro').textContent=services?'Explore our wellness services':'Browse '+category.toLowerCase()+' products';
+ document.querySelectorAll('[data-category]').forEach(a=>{if(a.dataset.category===category)a.setAttribute('aria-current','page')});
+ const list=document.getElementById('items');
+ const overlay=document.getElementById('overlay');
+ let lastFocus;
+ const knownProducts=['arnica-aloe-cream','mental-reset','nerve-pain-relaxant','appetite-suppressant'];
+ const knownServices=['reflexology','vibration-therapy','foot-detox','massage-chair'];
+ async function slugs(folder){
+   const fallback=folder==='services'?knownServices:knownProducts;
+   try{
+     const res=await fetch('https://api.github.com/repos/jeromeleegriffin/wildwood-willow/contents/content/'+folder,
+       {headers:{Accept:'application/vnd.github+json'}});
+     if(!res.ok)throw Error('Directory unavailable');
+     const files=await res.json();
+     if(!Array.isArray(files))throw Error('Not a listing');
+     return [...new Set([...files.filter(f=>f.type==='file'&&f.name.endsWith('.md')).map(f=>f.name.slice(0,-3)),...fallback])];
+   }catch(e){return fallback}
+ }
+ async function load(folder,slug){
+   try{
+     const res=await fetch('/content/'+folder+'/'+encodeURIComponent(slug)+'.md');
+     if(!res.ok)return null;
+     const source=await res.text();
+     const match=source.match(/^---\s*\n([\s\S]*?)\n---/);
+     if(!match)return null;
+     const data={slug};
+     match[1].split('\n').forEach(line=>{
+       const index=line.indexOf(':');
+       if(index>0)data[line.slice(0,index).trim()]=line.slice(index+1).trim();
+     });
+     return data;
+   }catch(e){return null}
+ }
+ function openService(item){
+   lastFocus=document.activeElement;
+   document.getElementById('dialog-title').textContent=item.title||'Service';
+   document.getElementById('dialog-summary').textContent=item.description||'';
+   document.getElementById('dialog-details').textContent=item.details||'Contact the store to learn more about this service.';
+   overlay.hidden=false;
+   overlay.querySelector('.close-x').focus();
+ }
+ function closeService(){overlay.hidden=true;if(lastFocus&&lastFocus.isConnected)lastFocus.focus()}
+ overlay.querySelectorAll('button').forEach(b=>b.addEventListener('click',closeService));
+ overlay.addEventListener('click',e=>{if(e.target===overlay)closeService()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)closeService()});
+ function render(items){
+   list.replaceChildren();
+   if(!items.length){
+     const message=document.createElement('div');
+     message.className='message';
+     message.textContent=services?'No services are listed yet. Please check back soon.':'No '+category.toLowerCase()+' products are listed yet. Please check back soon.';
+     list.append(message);
+     return;
+   }
+   items.forEach(item=>{
+     const card=document.createElement(services?'button':'a');
+     card.className='item';
+     if(services){card.type='button';card.addEventListener('click',()=>openService(item))}
+     else card.href='product.html?p='+encodeURIComponent(item.slug)+'&type=products';
+     const photo=document.createElement('div');photo.className='photo';
+     if(item.image){
+       const img=document.createElement('img');img.src=item.image;img.alt='';
+       img.onerror=()=>{img.remove();photo.textContent='Photo coming soon'};
+       photo.append(img);
+     }else photo.textContent='Photo coming soon';
+     const info=document.createElement('div');info.className='item-info';
+     const name=document.createElement('h2');name.textContent=item.title||'Item';
+     info.append(name);
+     if(!services&&item.price){const price=document.createElement('div');price.className='price';price.textContent=item.price;info.append(price)}
+     const description=document.createElement('p');description.textContent=item.description||'';info.append(description);
+     const action=document.createElement('span');action.className='action';action.textContent=services?'More information':'View product';info.append(action);
+     card.append(photo,info);list.append(card);
+   })
+ }
+ async function init(){
+   const folder=services?'services':'products';
+   const keys=await slugs(folder);
+   const found=(await Promise.all(keys.map(slug=>load(folder,slug)))).filter(Boolean);
+   render(services?found:found.filter(x=>(x.category||'').toLowerCase()===category.toLowerCase()));
+   if(services){
+     try{
+       const contact=await load('settings','contact');
+       if(contact&&contact.phone){
+         const p=document.getElementById('dialog-phone');
+         p.textContent=contact.phone;p.href='tel:'+contact.phone.replace(/[^\d+]/g,'');
+       }
+     }catch(e){}
+   }
+ }
+ init();
+})();
+</script>
+</body>
+</html>
