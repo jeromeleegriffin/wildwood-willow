@@ -20,7 +20,9 @@ collections:
       - { label: Description, name: description, widget: text }
       - { label: Featured, name: featured, widget: boolean, default: false }
       - { label: Category, name: category, widget: select, options: ["Capsules", "Tinctures", "Teas", "Topicals", "Home"] }
-      - { label: Image, name: image, widget: image }
+      - { label: Existing Photo (Legacy), name: image, widget: image, required: false, hint: "Older products use this until the new photo fields are set." }
+      - { label: Full Product Photo, name: image_full, widget: image, required: false, hint: "Original uncropped photo displayed on the product page and in the tap-to-enlarge viewer." }
+      - { label: Card Thumbnail, name: image_thumb, widget: image, required: false, hint: "Tightly cropped landscape thumbnail for homepage, category, and shop cards. Recommended 800 x 400 (2:1)." }
 
   - name: services
     label: Services
