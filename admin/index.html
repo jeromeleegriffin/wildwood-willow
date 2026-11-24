@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wildwood & Willow Admin</title>
   <style>
-    /* Site controls stay above the editor rather than covering bottom CMS navigation. */
+    /* Site tools are for browsing the CMS, never for overlaying an editor. */
     #ww-site-links {
       position: fixed;
       top: max(8px, env(safe-area-inset-top));
@@ -35,10 +35,11 @@
     }
     #ww-site-links button:focus-visible { outline: 2px solid #c17a4a; outline-offset: 3px; }
     #ww-preview-site[hidden] { display: none !important; }
+    #ww-site-links[hidden] { display: none !important; }
   </style>
 </head>
 <body>
-  <nav id="ww-site-links" aria-label="Website and photo tools">
+  <nav id="ww-site-links" aria-label="Website and photo tools" hidden>
     <a href="crop.html" title="Crop and center a product or service photo">Crop Photo</a>
     <button type="button" id="ww-live-site" title="View the public website as a visitor sees it">Live Site</button>
     <button type="button" id="ww-preview-site" hidden title="View the storefront while the public website is temporarily closed">Admin Preview</button>
@@ -48,6 +49,16 @@
       const previewKey = 'ww-admin-preview-until';
       const live = document.getElementById('ww-live-site');
       const preview = document.getElementById('ww-preview-site');
+      const links = document.getElementById('ww-site-links');
+      function updateToolVisibility() {
+        // Sveltia routes entry editors through /collections/<name>/entries/<slug>
+        // and creation through /collections/<name>/new. Only show tools on lists.
+        const route = location.hash.replace(/^#/, '').split('?')[0].replace(/\/$/, '');
+        links.hidden = !/^\/collections(?:\/[^/]+(?:\/filter\/[^/]+)?)?$/.test(route);
+      }
+      updateToolVisibility();
+      window.addEventListener('hashchange', updateToolVisibility);
+      window.addEventListener('pageshow', updateToolVisibility);
       let requestId = 0;
       live.addEventListener('click', () => {
         // Live Site always shows the visitor experience, even in this browser tab.
