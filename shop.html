@@ -115,9 +115,10 @@
         link.setAttribute('aria-label', mode === 'products'
           ? 'View product: ' + (item.title || 'Product')
           : 'Learn about services: ' + (item.title || 'Service'));
-        if (item.image) {
+        const cardPhoto = mode === 'products' ? (item.image_thumb || item.image_full || item.image) : item.image;
+        if (cardPhoto) {
           const img = document.createElement('img');
-          img.src = window.WWCatalog.image(item.image);
+          img.src = window.WWCatalog.image(cardPhoto);
           img.alt = '';
           img.onerror = () => { img.remove(); };
           link.append(img);
