@@ -1,0 +1,8 @@
+# Backend code and deployment files are not public storefront assets.
+/orders/
+/oauth-proxy/
+/.github/
+/.env*
+/.dev.vars*
+/wrangler.*
+/cloudflare.config.*
