@@ -32,6 +32,7 @@
     .site-menu nav { position: absolute; inset-inline-end: 0; top: 100%; width: max-content; max-width: 75vw; background: #fffdf8; border: 1px solid #c5b9ab; border-radius: 8px; box-shadow: 0 4px 14px #0002; }
     .site-menu a { display: block; padding: 12px 16px; color: #3e4f32; }
   </style>
+  <script src="/js/menu-pages.js?v=1" defer></script>
 </head>
 <body>
   <header class="header">
@@ -42,7 +43,12 @@
       </div>
       <details class="site-menu">
         <summary class="menu" aria-label="Open site menu">☰</summary>
-        <nav aria-label="Site menu"><a href="disclaimer.html">Product Disclaimer</a></nav>
+        <nav aria-label="Site menu">
+          <a href="disclaimer.html" data-menu-label="disclaimer">Product Disclaimer</a>
+          <a href="menu-info.html?page=contact" data-menu-label="contact">Contact &amp; Store Hours</a>
+          <a href="menu-info.html?page=shipping" data-menu-label="shipping">Shipping &amp; Returns</a>
+          <a href="menu-info.html?page=about" data-menu-label="about">About Wildwood &amp; Willow</a>
+        </nav>
       </details>
     </div>
   <img src="images/header-willow.png" class="header-willow" alt="">
