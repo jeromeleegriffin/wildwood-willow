@@ -8,6 +8,23 @@ async scheduled(_event,env) {
   await expireInventoryHolds(env.DB);
 },
 async fetch(req,env){const u=new URL(req.url),h={'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':'https://wwbotanicals.org','Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS','Vary':'Origin'};const out=(v,s=200)=>new Response(JSON.stringify(v),{status:s,headers:h});if(req.method==='OPTIONS')return new Response(null,{status:204,headers:h});if(u.pathname==='/health')return out({ok:true,mode:env.REAL_CHECKOUT_ENABLED==='true'?'guest-and-test':'test-only'});
+if (u.pathname === '/availability') {
+  if (req.method !== 'GET') return out({error:'Method not allowed'},405);
+  if (env.REAL_CHECKOUT_ENABLED !== 'true') return out({error:'Online ordering is currently paused.'},503);
+  const slugs = Array.from(new Set(u.searchParams.getAll('product')));
+  if (!slugs.length || slugs.length > 40 || slugs.some(slug=>!/^[a-z0-9_-]{1,100}$/.test(slug))) {
+    return out({error:'Choose between 1 and 40 valid products.'},400);
+  }
+  try {
+    const rows = await env.DB.prepare(
+      'SELECT product_slug, on_hand-reserved AS available FROM inventory WHERE product_slug IN (' +
+        slugs.map(()=>'?').join(',') + ')'
+    ).bind(...slugs).all();
+    return out({available:Object.fromEntries(rows.results.map(row=>[row.product_slug,row.available]))});
+  } catch {
+    return out({error:'Stock is temporarily unavailable.'},503);
+  }
+}
 if (u.pathname === '/checkout') {
   if (req.method !== 'POST') return out({error:'Method not allowed'},405);
   const origin = req.headers.get('Origin');
