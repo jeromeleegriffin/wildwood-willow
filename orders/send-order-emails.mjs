@@ -19,6 +19,7 @@ function orderMessage(order,kind,adminAddresses) {
     'Merchandise: ' + amount(order.subtotal_cents),
     'Discount: ' + amount(order.discount_cents),
     'Shipping: ' + amount(order.shipping_cents),
+    ...(order.tax_cents ? ['Sales tax: ' + amount(order.tax_cents)] : []),
     'Total: ' + amount(order.total_cents),
     'Selected payment method: ' + method,
     'Status: ' + status,
@@ -64,7 +65,7 @@ export async function sendOrderEmails(env, now = Math.floor(Date.now()/1000)) {
     `).bind(token,now+600,maxAttempts,now,now,adminReady?1:0).first();
     if (!job) break;
     const order = await env.DB.prepare(`SELECT id,email,items_json,subtotal_cents,discount_cents,
-      shipping_cents,total_cents,status,payment_method FROM orders WHERE id=? AND is_test=0
+      shipping_cents,tax_cents,total_cents,status,payment_method FROM orders WHERE id=? AND is_test=0
     `).bind(job.order_id).first();
     let delivery;
     try {
