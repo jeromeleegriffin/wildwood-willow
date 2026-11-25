@@ -50,3 +50,44 @@ assert.deepEqual(stock('first'),[0,0]);
 assert.deepEqual(stock('second'),[1,0]);
 assert.equal(db.prepare("SELECT COUNT(*) AS n FROM inventory_holds WHERE order_id='real-paid' AND state='consumed'").get().n,2);
 console.log('Inventory passed: last-unit protection, multi-line rollback, unknown stock, test isolation, expiry validation, cancellation release, and payment consumption.');
+
+const {expireInventoryHolds} = await import('./expire-inventory-holds.mjs');
+const adapter = {
+  prepare(query) {
+    return {bind: (...args) => () => db.prepare(query).run(...args)};
+  },
+  async batch(statements) {
+    db.exec('BEGIN');
+    try {
+      const results = statements.map(run => ({meta:run()}));
+      db.exec('COMMIT');
+      return results;
+    } catch (error) {
+      db.exec('ROLLBACK');
+      throw error;
+    }
+  }
+};
+db.exec("INSERT INTO inventory(product_slug,on_hand) VALUES ('later',2),('expiring',101)");
+reserve('real-unpaid',[['expiring',1],['later',1]],{expires:expiry});
+reserve('real-current',[['later',1]],{expires:expiry+120});
+insertOrder.run('test-unpaid',1);
+for (let n = 0; n < 100; n++) reserve('expired-'+n,[['expiring',1]]);
+assert.equal(await expireInventoryHolds(adapter,expiry-1),0);
+assert.equal(await expireInventoryHolds(adapter,expiry),100);
+assert.equal(await expireInventoryHolds(adapter,expiry),1);
+assert.equal(await expireInventoryHolds(adapter,expiry),0);
+assert.deepEqual(stock('expiring'),[101,0]);
+assert.deepEqual(stock('later'),[2,1]);
+const getStatus = db.prepare('SELECT status FROM orders WHERE id=?');
+assert.equal(getStatus.get('real-unpaid').status,'cancelled');
+assert.equal(getStatus.get('real-current').status,'awaiting_payment');
+assert.equal(getStatus.get('test-unpaid').status,'awaiting_payment');
+assert.equal(getStatus.get('real-paid').status,'payment_confirmed');
+const eventCounts = db.prepare(`
+  SELECT COUNT(*) AS n, COUNT(DISTINCT order_id) AS unique_orders
+  FROM order_events WHERE status='cancelled'
+`).get();
+assert.equal(eventCounts.n,101);
+assert.equal(eventCounts.unique_orders,101);
+console.log('Expiry passed: cutoff, batch limit, stock release, one cancellation event per order, repeated runs, and paid/test order protection.');
