@@ -104,13 +104,20 @@ collections:
               - { label: Menu Label and Page Heading, name: title, widget: string }
               - { label: Page Text, name: body, widget: text }
 
-          - label: Social Media
+          - label: "Social Media & Websites"
             name: social
             widget: object
             fields:
               - { label: Menu Label and Page Heading, name: title, widget: string }
               - { label: Page Text, name: body, widget: text }
               - { label: Facebook Page URL, name: facebook_url, widget: string, required: false }
+              - label: Websites to Feature
+                name: websites
+                widget: list
+                required: false
+                fields:
+                  - { label: Link Name, name: title, widget: string }
+                  - { label: Website URL, name: url, widget: string }
 
   - name: coupons
     label: Coupon Codes
