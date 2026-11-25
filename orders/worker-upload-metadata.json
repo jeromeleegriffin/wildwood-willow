@@ -6,6 +6,13 @@
       "type": "d1",
       "name": "DB",
       "id": "42ebf563-0070-44a8-887f-d0c0952827ba"
+    },
+    {
+      "type": "send_email",
+      "name": "ORDER_EMAIL",
+      "allowed_sender_addresses": [
+        "notifications@orders.wwbotanicals.org"
+      ]
     }
   ]
 }
