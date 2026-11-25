@@ -36,6 +36,25 @@
           link.parentElement.hidden = false;
         }
       } catch {}
+      const list = document.getElementById('website-links');
+      const websites = Array.isArray(data.social.websites) ? data.social.websites : [];
+      for (const entry of websites) {
+        const title = clean(entry?.title);
+        if (!title) continue;
+        try {
+          const url = new URL(entry.url);
+          if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) continue;
+          const item = document.createElement('li');
+          const website = document.createElement('a');
+          website.href = url.href;
+          website.textContent = title;
+          website.target = '_blank';
+          website.rel = 'noopener noreferrer';
+          item.append(website);
+          list.append(item);
+        } catch {}
+      }
+      list.hidden = !list.childElementCount;
     }
     const title = clean(data[key]?.title);
     const copy = clean(data[key]?.body);
