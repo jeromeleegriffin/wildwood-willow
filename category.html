@@ -88,8 +88,6 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
 </header>
 <a class="back" href="index.html">← Back to Home</a>
 <main>
- <h1 id="heading">Products</h1>
- <p class="intro" id="intro">Browse our collection</p>
  <nav class="categories" aria-label="Browse categories">
   <a href="category.html?category=Capsules" data-category="Capsules"><span>💊</span>CAPSULES</a>
   <a href="category.html?category=Tinctures" data-category="Tinctures"><span>💧</span>TINCTURES</a>
@@ -118,12 +116,6 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
  const category=categories.find(x=>x.toLowerCase()===chosen.toLowerCase()) || 'Capsules';
  const services=category==='Services';
  document.title=category+' | Wildwood & Willow Botanicals';
- document.getElementById('heading').textContent=category;
- document.getElementById('intro').textContent=services?'Explore our wellness services':'Browse '+category.toLowerCase()+' products';
- if(category==='Capsules'){
-   document.getElementById('heading').hidden=true;
-   document.getElementById('intro').hidden=true;
- }
  document.querySelectorAll('[data-category]').forEach(a=>{if(a.dataset.category===category)a.setAttribute('aria-current','page')});
  const list=document.getElementById('items');
  const pager=document.getElementById('catalog-pager'),prev=document.getElementById('prev-page'),next=document.getElementById('next-page');
