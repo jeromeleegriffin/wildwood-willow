@@ -23,6 +23,9 @@
     .checkout-note { color: #665b50; text-align: center; font-size: .8rem; line-height: 1.35; margin-top: 8px; }
     .checkout-btn:disabled { opacity: .55; cursor: not-allowed; }
     .checkout-btn { background: #c17a4a; color: white; border: none; padding: 12px; border-radius: 20px; width: 100%; margin-top: 16px; font-size: 1rem; }
+    #guest-checkout label { display: block; margin: 10px 0; }
+    #guest-checkout input, #guest-checkout select { display: block; box-sizing: border-box; width: 100%; padding: 9px; font: inherit; }
+    #guest-receipt { overflow-wrap: anywhere; }
     .empty { text-align: center; padding: 40px 0; color: #888; }
   </style>
   <script src="/js/store-status.js?v=7" defer></script>
@@ -40,6 +43,25 @@
       <p id="coupon-status" class="checkout-note" role="status"></p>
     </form>
     <div id="total" style="text-align:right; margin-top:12px; font-weight:bold;"></div>
+    <form id="guest-checkout" hidden>
+      <h3>Checkout</h3>
+      <label>Name<input name="customerName" autocomplete="name" maxlength="120" required></label>
+      <label>Email<input name="email" type="email" autocomplete="email" maxlength="200" required></label>
+      <label>Phone <span>(optional)</span><input name="phone" type="tel" autocomplete="tel" maxlength="40"></label>
+      <label>Street address<input name="street" autocomplete="address-line1" maxlength="150" required></label>
+      <label>Apartment or unit <span>(optional)</span><input name="unit" autocomplete="address-line2" maxlength="80"></label>
+      <label>City<input name="city" autocomplete="address-level2" maxlength="100" required></label>
+      <label>State<input name="region" autocomplete="address-level1" maxlength="50" required></label>
+      <label>ZIP code<input name="postalCode" autocomplete="postal-code" maxlength="20" required></label>
+      <label>Payment method<select name="paymentMethod" required><option value="">Choose a method</option><option value="cashapp">Cash App</option><option value="venmo">Venmo</option></select></label>
+      <button class="checkout-btn" type="submit">Place order</button>
+      <p id="guest-status" role="status"></p>
+    </form>
+    <section id="guest-receipt" hidden aria-label="Order confirmation">
+      <h3>Order saved</h3>
+      <p id="guest-order-detail"></p>
+      <a id="guest-pay" target="_blank" rel="noopener noreferrer" hidden>Open payment app</a>
+    </section>
     <section id="manual-payment" hidden aria-label="Manual payment options">
       <p class="checkout-note">Contact the store first to place your order and confirm your shipping details, coupon eligibility and final amount. Paying through these links does not submit an order or confirm payment on this site.</p>
       <a class="checkout-btn" style="display:block;text-align:center" href="https://venmo.com/u/WWBotanicals26" target="_blank" rel="noopener noreferrer">Open Venmo</a>
@@ -49,6 +71,79 @@
 
   <script>
     let checkedItems = [];
+    const ordersWorker = 'https://wildwood-willow-orders.jeromeleegriffin.workers.dev';
+    const guestForm = document.getElementById('guest-checkout');
+    const guestReceipt = document.getElementById('guest-receipt');
+    const guestStatus = document.getElementById('guest-status');
+    const guestButton = guestForm.querySelector('button[type="submit"]');
+    let guestAvailable = false, guestSubmitting = false;
+    const checkoutRequests = new Map();
+
+    async function refreshGuestAvailability() {
+      try {
+        const response = await fetch(ordersWorker + '/health', {cache:'no-store'});
+        guestAvailable = response.ok && (await response.json()).mode === 'guest-and-test';
+      } catch {
+        guestAvailable = false;
+      }
+      const cart = readCart();
+      renderCart(cart, checkedSource !== JSON.stringify(cart));
+    }
+
+    guestForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const cart = readCart();
+      const source = JSON.stringify(cart);
+      if (guestForm.hidden || guestSubmitting || !guestAvailable ||
+          !window.WWStoreAvailability?.isOrderingAllowed() || checkedSource !== source || !cart.length) return;
+      const fields = Object.fromEntries(new FormData(guestForm));
+      const quantities = new Map();
+      for (const item of cart) quantities.set(item.slug, (quantities.get(item.slug) || 0) + itemQty(item));
+      const details = {
+        customerName:fields.customerName,email:fields.email,phone:fields.phone,
+        address:{street:fields.street,unit:fields.unit,city:fields.city,region:fields.region,postalCode:fields.postalCode},
+        items:Array.from(quantities, ([slug,qty]) => ({slug,qty})),coupon:activeCoupon,
+        paymentMethod:fields.paymentMethod
+      };
+      guestSubmitting = true;
+      guestButton.disabled = true;
+      guestStatus.textContent = 'Saving your order…';
+      try {
+        const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(details)));
+        const key = 'ww-guest-order:' + Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2,'0')).join('');
+        let requestId = checkoutRequests.get(key);
+        try { requestId ||= sessionStorage.getItem(key); } catch {}
+        requestId ||= crypto.randomUUID();
+        checkoutRequests.set(key,requestId);
+        try { sessionStorage.setItem(key,requestId); } catch {}
+        const response = await fetch(ordersWorker + '/checkout', {
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({...details,requestId})
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Order could not be saved.');
+        const order = data.order;
+        const amount = currency.format(order.totalCents / 100);
+        const awaiting = order.status === 'awaiting_payment' && order.holdExpiresAt * 1000 > Date.now();
+        const pay = document.getElementById('guest-pay');
+        pay.href = fields.paymentMethod === 'cashapp' ? 'https://cash.app/$WWBotanicals26' : 'https://venmo.com/u/WWBotanicals26';
+        pay.hidden = !awaiting;
+        document.getElementById('guest-order-detail').textContent =
+          order.id + ' · ' + amount + ' · ' + (awaiting
+            ? 'Awaiting payment. Your items are held until ' + new Date(order.holdExpiresAt * 1000).toLocaleTimeString() + '. Include the order number when paying.'
+            : 'Current status: ' + order.status.replaceAll('_',' ') + '.');
+        guestReceipt.hidden = false;
+        guestForm.reset();
+        if (JSON.stringify(readCart()) === source) saveCart([]);
+        guestReceipt.scrollIntoView({block:'nearest'});
+        guestStatus.textContent = '';
+      } catch (error) {
+        guestStatus.textContent = error.message || 'Order could not be saved. Try again.';
+      } finally {
+        guestSubmitting = false;
+        guestButton.disabled = false;
+      }
+    });
     let activeCoupon = '', couponRules = [], couponReady = false, couponRequest = 0;
     const couponForm = document.getElementById('coupon-form');
     const couponInput = document.getElementById('coupon-code');
@@ -142,6 +237,7 @@
       const summary = document.getElementById('total');
       const payments = document.getElementById('manual-payment');
       payments.hidden = true;
+      guestForm.hidden = true;
       couponForm.hidden = !cart.length;
       container.replaceChildren();
       if (!cart.length) {
@@ -216,7 +312,9 @@
         (checking ? ' · Verifying prices…'
           : unavailable ? ' · Total unavailable until all items are verified'
           : ' · Subtotal: ' + currency.format(total/100) + ' · Shipping: ' + (shipping && discount>=0 ? currency.format(shipping/100) : 'Free') + (discount>0 ? ' · Coupon: −'+currency.format(discount/100) : '') + ' · Total: ' + currency.format((total+shipping-Math.abs(discount))/100));
-      payments.hidden = checking || unavailable || !window.WWStoreAvailability?.isOrderingAllowed();
+      const checkoutReady = !checking && !unavailable && window.WWStoreAvailability?.isOrderingAllowed();
+      guestForm.hidden = !checkoutReady || !guestAvailable;
+      payments.hidden = !checkoutReady || guestAvailable;
       if (changed && !unavailable) {
         document.getElementById('cart-check-status').textContent =
           'Product prices have changed. The total above uses current prices.';
@@ -241,6 +339,7 @@
     window.addEventListener('pageshow', e => {if (e.persisted) refreshCart();});
     document.addEventListener('ww:store-status', () => renderCart(readCart(), checkedSource !== JSON.stringify(readCart())));
     refreshCart();
+    refreshGuestAvailability();
   </script>
 </body>
 </html>
