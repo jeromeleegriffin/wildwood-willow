@@ -8,13 +8,13 @@ export async function savePendingOrder(db, order, holdExpiresAt) {
   const createOrder = db.prepare(`
     INSERT INTO orders (
       id, customer_name, email, phone, shipping_address, items_json,
-      subtotal_cents, discount_cents, shipping_cents, total_cents, coupon,
+      subtotal_cents, discount_cents, shipping_cents, tax_cents, total_cents, coupon,
       payment_method, status, is_test
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'awaiting_payment', 0)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'awaiting_payment', 0)
   `).bind(
     order.id, order.customerName, order.email, order.phone ?? null, order.shippingAddress,
     JSON.stringify(order.items), order.subtotalCents, order.discountCents,
-    order.shippingCents, order.totalCents, order.coupon ?? null, order.paymentMethod
+    order.shippingCents, order.taxCents ?? 0, order.totalCents, order.coupon ?? null, order.paymentMethod
   );
   const insertHold = db.prepare(`
     INSERT INTO inventory_holds (order_id, product_slug, quantity, expires_at)
