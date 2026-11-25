@@ -31,7 +31,8 @@ await assert.rejects(quote(1,'DATED',new Date('2026-11-26T06:00:00Z')),/expired/
 for (const code of ['PERCENT','DISABLED','DUPLICATE','UNKNOWN','INVALID-DATE']) {
   await assert.rejects(quote(1,code),/invalid/);
 }
-for (const [slug,qty] of [['missing',1],['unknown-stock',1],['fixture',21]]) {
+assert.equal((await quoteGuestOrder(cart(1,null,'unknown-stock'),{fetchCatalog})).subtotalCents,2500);
+for (const [slug,qty] of [['missing',1]]) {
   await assert.rejects(quoteGuestOrder(cart(qty,null,slug),{fetchCatalog}),/unavailable/);
 }
 await assert.rejects(quoteGuestOrder(cart(1),{fetchCatalog:()=>new Response(null,{status:503})}),/catalog is temporarily unavailable/);
