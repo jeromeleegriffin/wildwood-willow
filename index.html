@@ -158,6 +158,28 @@
       .store-home .card p { font-size: .8rem; }
       .store-home .categories span { font-size: 1.05rem; }
     }
+    @media (min-width: 760px) {
+      .store-home .hero { gap: clamp(10px, 2vw, 36px); }
+      .store-home .hero > .ww-orders-notice--hero {
+        position: static;
+        flex: 0 1 245px;
+        min-width: 135px;
+        width: auto;
+        padding: clamp(8px, 1.2vw, 15px);
+        background: linear-gradient(145deg, #fffdf7, #f8edd9);
+        border: 1px solid #bd975e;
+        border-inline-start: 3px solid #9b713b;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px #3e30201a;
+        font-size: clamp(.8rem, 1.05vw, 1.02rem);
+        line-height: 1.3;
+      }
+      .store-home .hero .ww-orders-short {
+        font-size: clamp(.93rem, 1.2vw, 1.18rem);
+        margin-bottom: 4px;
+      }
+      .store-home .hero .ww-orders-details { display: block; overflow: visible; }
+    }
   </style>
   <script src="/js/menu-pages.js?v=2" defer></script>
 </head>
