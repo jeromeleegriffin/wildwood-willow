@@ -34,9 +34,14 @@
     <h2 style="color:#3e4f32; margin: 12px 0;">Your Cart</h2>
     <p id="cart-check-status" class="checkout-note" role="status">Checking current product details…</p>
     <div id="cart-items"></div>
+    <form id="coupon-form" hidden style="margin:14px 0">
+      <label for="coupon-code">Coupon code</label>
+      <div style="display:flex;gap:6px;margin-top:5px"><input id="coupon-code" maxlength="80" autocomplete="off" style="min-width:0;flex:1;padding:9px;border:1px solid #c5b9ab;border-radius:6px"><button type="submit" class="qty-btn" style="width:auto;padding:0 12px">Apply</button><button type="button" id="coupon-remove" class="remove-btn">Remove</button></div>
+      <p id="coupon-status" class="checkout-note" role="status"></p>
+    </form>
     <div id="total" style="text-align:right; margin-top:12px; font-weight:bold;"></div>
     <section id="manual-payment" hidden aria-label="Manual payment options">
-      <p class="checkout-note">Contact the store first to place your order and confirm your shipping details and final amount. Paying through these links does not submit an order or confirm payment on this site.</p>
+      <p class="checkout-note">Contact the store first to place your order and confirm your shipping details, coupon eligibility and final amount. Paying through these links does not submit an order or confirm payment on this site.</p>
       <a class="checkout-btn" style="display:block;text-align:center" href="https://venmo.com/u/WWBotanicals26" target="_blank" rel="noopener noreferrer">Open Venmo</a>
       <a class="checkout-btn" style="display:block;text-align:center" href="https://cash.app/$WWBotanicals26" target="_blank" rel="noopener noreferrer">Open Cash App</a>
     </section>
@@ -44,6 +49,41 @@
 
   <script>
     let checkedItems = [];
+    let activeCoupon = '', couponRules = [], couponReady = false, couponRequest = 0;
+    const couponForm = document.getElementById('coupon-form');
+    const couponInput = document.getElementById('coupon-code');
+    const couponStatus = document.getElementById('coupon-status');
+    function couponDiscount(total) {
+      if (!activeCoupon) return 0;
+      if (!couponReady) {couponStatus.textContent='Coupon could not be verified.';return 0;}
+      const matches=couponRules.filter(c=>String(c.code||'').trim().toUpperCase()===activeCoupon);
+      const c=matches.length===1?matches[0]:null;
+      const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+      const amount=Number(c?.amount), minimum=Number(c?.minimum??0);
+      if(!c||c.enabled!==true||(c.expires&&(!/^\d{4}-\d{2}-\d{2}$/.test(c.expires)||c.expires<today))||!Number.isFinite(amount)||amount<=0||!Number.isFinite(minimum)||minimum<0||!['fixed','percent'].includes(c.type)||(c.type==='percent'&&amount>100)){
+        couponStatus.textContent='Invalid, disabled or expired coupon.';return 0;
+      }
+      if(total<Math.round(minimum*100)){couponStatus.textContent='Minimum subtotal: '+currency.format(minimum);return 0;}
+      const discount=Math.min(total,Math.round(c.type==='percent'?total*amount/100:amount*100));
+      couponStatus.textContent='Coupon '+activeCoupon+' applied: '+currency.format(discount/100)+' off.';
+      return discount;
+    }
+    async function verifyCoupon(){
+      const request=++couponRequest;
+      couponReady=false;
+      couponStatus.textContent='Checking coupon…';
+      try{
+        const res=await fetch('https://raw.githubusercontent.com/jeromeleegriffin/wildwood-willow/main/content/settings/coupons.json?v='+Date.now(),{cache:'no-store'});
+        if(!res.ok)throw Error('Unavailable');
+        const data=await res.json();
+        if(request!==couponRequest)return;
+        couponRules=Array.isArray(data.coupons)?data.coupons:[];couponReady=true;
+      }catch{if(request!==couponRequest)return;couponRules=[];}
+      renderCart(readCart(),checkedSource!==JSON.stringify(readCart()));
+    }
+    couponForm.addEventListener('submit',e=>{e.preventDefault();activeCoupon=couponInput.value.trim().toUpperCase();if(activeCoupon)verifyCoupon();else clearCoupon();});
+    function clearCoupon(){++couponRequest;activeCoupon='';couponInput.value='';couponStatus.textContent='';renderCart(readCart(),checkedSource!==JSON.stringify(readCart()));}
+    document.getElementById('coupon-remove').addEventListener('click',clearCoupon);
     let checkedSource = '';
     let refreshSerial = 0;
     const currency = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD'});
@@ -101,6 +141,7 @@
       const summary = document.getElementById('total');
       const payments = document.getElementById('manual-payment');
       payments.hidden = true;
+      couponForm.hidden = !cart.length;
       container.replaceChildren();
       if (!cart.length) {
         const empty = document.createElement('div');
@@ -169,10 +210,11 @@
         row.append(info,remove);container.append(row);
       });
       const shipping = count && total <= 10000 ? 800 : 0;
+      const discount = !checking && !unavailable ? couponDiscount(total) : 0;
       summary.textContent = count + ' item' + (count === 1 ? '' : 's') +
         (checking ? ' · Verifying prices…'
           : unavailable ? ' · Total unavailable until all items are verified'
-          : ' · Subtotal: ' + currency.format(total/100) + ' · Shipping: ' + (shipping ? currency.format(shipping/100) : 'Free') + ' · Total: ' + currency.format((total+shipping)/100));
+          : ' · Subtotal: ' + currency.format(total/100) + ' · Shipping: ' + (shipping ? currency.format(shipping/100) : 'Free') + (discount ? ' · Coupon: −'+currency.format(discount/100) : '') + ' · Total: ' + currency.format((total+shipping-discount)/100));
       payments.hidden = checking || unavailable || !window.WWStoreAvailability?.isOrderingAllowed();
       if (changed && !unavailable) {
         document.getElementById('cart-check-status').textContent =
