@@ -71,6 +71,21 @@
       .store-home .card { padding-bottom: 20px; }
       .store-home .card .arrow { line-height: 1; bottom: 4px; right: 4px; }
     }
+    @media (min-width: 760px) {
+      .store-home { max-width: 1720px; }
+      .store-home .hero-frame { width: min(100vw, 1720px); }
+      .store-home .main-content { gap: 20px; padding-inline: clamp(16px, 2vw, 36px); }
+      .store-home .cards { gap: clamp(12px, 1.2vw, 24px); }
+      .store-home .card { padding: 12px 12px 42px; }
+      .store-home .card img, .store-home .card .placeholder {
+        height: clamp(150px, 15vw, 265px);
+        margin-bottom: 8px;
+      }
+      .store-home .card h3 { font-size: clamp(1.08rem, 1.3vw, 1.5rem); }
+      .store-home .card .price { font-size: 1.08rem; margin-block: 3px; }
+      .store-home .card p { font-size: clamp(.95rem, 1.05vw, 1.15rem); line-height: 1.35; }
+      .store-home .card .arrow { right: 10px; bottom: 9px; width: 26px; height: 26px; line-height: 1; }
+    }
   </style>
   <script src="/js/menu-pages.js?v=2" defer></script>
 </head>
