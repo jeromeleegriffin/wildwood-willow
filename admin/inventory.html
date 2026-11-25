@@ -19,6 +19,7 @@
 <h1>Inventory</h1>
 <p>Enter the physical count on hand, including units reserved for unpaid orders.</p>
 <button id="refresh" type="button">Refresh inventory</button>
+<p id="inventory-summary" aria-live="polite"></p>
 <p id="message" role="status"></p>
 <div id="products"></div>
 <script src="/js/catalog.js?v=4"></script>
@@ -54,6 +55,10 @@ function card(product, stock) {
   const current = document.createElement('p');
   current.textContent = stock ? stock.on_hand + ' on hand · ' + stock.reserved + ' reserved · ' + stock.available + ' available' : 'Stock count needed';
   if (!stock) current.className = 'missing';
+  const oldCount = String(product.quantity_available ?? '').trim();
+  if (!stock && /^\d{1,4}$/.test(oldCount)) {
+    current.textContent += ' · Previous catalog count: ' + Number(oldCount) + ' (verify before saving)';
+  }
   const label = document.createElement('label');
   label.textContent = 'On hand';
   const count = document.createElement('input');
@@ -88,7 +93,10 @@ async function refresh() {
   const [catalog,data] = await Promise.all([WWCatalog.list('products'),inventory()]);
   const existing = new Map(data.inventory.map(row => [row.product_slug,row]));
   if (!catalog.length) throw Error('No catalog products could be loaded.');
-  list.replaceChildren(...catalog.map(product => card(product,existing.get(product.slug))));
+  const ordered = [...catalog].sort((first,second) => Number(existing.has(first.slug)) - Number(existing.has(second.slug)));
+  const missing = ordered.filter(product => !existing.has(product.slug)).length;
+  byId('inventory-summary').textContent = missing + ' of ' + ordered.length + ' products still need a count.';
+  list.replaceChildren(...ordered.map(product => card(product,existing.get(product.slug))));
 }
 
 byId('refresh').onclick = async () => {
