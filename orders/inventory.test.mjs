@@ -91,3 +91,30 @@ const eventCounts = db.prepare(`
 assert.equal(eventCounts.n,101);
 assert.equal(eventCounts.unique_orders,101);
 console.log('Expiry passed: cutoff, batch limit, stock release, one cancellation event per order, repeated runs, and paid/test order protection.');
+
+const {savePendingOrder} = await import('./save-pending-order.mjs');
+const checkoutOrder = {
+  id:'checkout-created', customerName:'Fixture', email:'test@example.com',
+  shippingAddress:'Test address', items:[{slug:'expiring',qty:2,price_cents:1500}],
+  subtotalCents:3000, discountCents:100, shippingCents:800, totalCents:3700,
+  paymentMethod:'venmo'
+};
+const checkoutExpiry = Math.floor(Date.now() / 1000) + 300;
+await savePendingOrder(adapter,checkoutOrder,checkoutExpiry);
+const stored = db.prepare('SELECT * FROM orders WHERE id=?').get(checkoutOrder.id);
+assert.equal(stored.is_test,0);
+assert.equal(stored.status,'awaiting_payment');
+assert.equal(stored.total_cents,3700);
+assert.deepEqual(JSON.parse(stored.items_json),checkoutOrder.items);
+assert.deepEqual(stock('expiring'),[101,2]);
+await assert.rejects(savePendingOrder(adapter,checkoutOrder,checkoutExpiry), /UNIQUE/);
+assert.deepEqual(stock('expiring'),[101,2]);
+await assert.rejects(savePendingOrder(adapter,{
+  ...checkoutOrder,id:'checkout-rejected',
+  items:[...checkoutOrder.items,{slug:'later',qty:2,price_cents:1500}]
+},checkoutExpiry), /Insufficient/);
+assert.equal(getStatus.get('checkout-rejected'),undefined);
+assert.deepEqual(stock('expiring'),[101,2]);
+assert.equal(db.prepare('SELECT COUNT(*) AS n FROM order_events WHERE order_id=?').get(checkoutOrder.id).n,1);
+assert.equal(db.prepare('SELECT COUNT(*) AS n FROM order_events WHERE order_id=?').get('checkout-rejected').n,0);
+console.log('Checkout persistence passed: order, holds, and history commit together, duplicate ID cannot reserve again, and a rejected cart rolls back.');
