@@ -117,6 +117,35 @@
       .store-home .site-menu { justify-self: end; margin-inline-start: 4px; }
       .store-home .footer-store-links { display: none; }
     }
+    @media (min-width: 760px) {
+      .store-home { height: 100dvh; min-height: 0; }
+      .store-home .hero { padding-block: clamp(4px, 1dvh, 12px); }
+      .store-home .hero-image img { height: clamp(74px, 14dvh, 150px); }
+      .store-home .hero-logo img { height: clamp(70px, 12dvh, 120px); }
+      .store-home .hero-text { padding-block: clamp(7px, 1.1dvh, 12px); }
+      .store-home .main-content { flex: 1 1 0; min-height: 0; gap: clamp(5px, 1.3dvh, 16px); }
+      .store-home .section { flex: 1 1 0; }
+      .store-home .cards { flex: 1 1 0; grid-auto-rows: minmax(0, 1fr); }
+      .store-home .card { padding-block: clamp(5px, 1dvh, 12px) 34px; }
+      .store-home .card img, .store-home .card .placeholder {
+        height: auto;
+        min-height: 0;
+        flex: 1 1 0;
+        margin-bottom: clamp(3px, .8dvh, 8px);
+      }
+      .store-home .categories { position: relative; }
+    }
+    @media (min-width: 760px) and (max-height: 760px) {
+      .store-home .header { padding-block: 4px; }
+      .store-home .contact { padding-block: 5px; }
+      .store-home .hero h1 { font-size: clamp(1.25rem, 2.2vw, 1.7rem); }
+      .store-home .hero p, .store-home .card p { font-size: .875rem; line-height: 1.2; }
+      .store-home .card h3 { font-size: 1rem; }
+      .store-home .card .price { font-size: .9rem; }
+      .store-home .card { padding-bottom: 27px; }
+      .store-home .card .arrow { width: 20px; height: 20px; bottom: 4px; }
+      .store-home .categories { padding-block: 4px; }
+    }
   </style>
   <script src="/js/menu-pages.js?v=2" defer></script>
 </head>
