@@ -76,11 +76,22 @@
       .store-home .hero-text {
         flex: 0 1 390px;
         padding: 12px 18px;
-        background: rgba(255, 253, 248, .94);
+        background: linear-gradient(145deg, #fffdf7, #f4e9d5);
         border-radius: 10px;
+        box-shadow: 0 0 0 1px #ad8a54, inset 0 0 0 4px #fffaf0, inset 0 0 0 5px #d9c39e, 0 5px 14px #3e30201f;
       }
       .store-home .hero h1 { font-size: clamp(1.35rem, 2vw, 2.15rem); line-height: 1.16; }
       .store-home .hero h1 span { display: block; white-space: nowrap; color: #954d2b; }
+      .store-home .hero-text .underline { display: none; }
+      .store-home .hero h1::after {
+        content: "";
+        display: block;
+        width: 66px;
+        height: 9px;
+        margin-top: 4px;
+        background: linear-gradient(90deg, #a47b46, transparent) left center / 49px 1px no-repeat,
+                    radial-gradient(circle, #a47b46 2px, transparent 2.5px) 49px center / 8px 8px no-repeat;
+      }
       .store-home .hero p { color: #30382a; line-height: 1.35; margin-bottom: 0; }
       .store-home .hero-frame { width: min(100vw, 1720px); }
       .store-home .main-content { gap: 20px; padding-inline: clamp(16px, 2vw, 36px); }
