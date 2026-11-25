@@ -1,6 +1,12 @@
+import {expireInventoryHolds} from './expire-inventory-holds.mjs';
 import {submitGuestOrder} from './submit-guest-order.mjs';
 
-export default {async fetch(req,env){const u=new URL(req.url),h={'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':'https://wwbotanicals.org','Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS','Vary':'Origin'};const out=(v,s=200)=>new Response(JSON.stringify(v),{status:s,headers:h});if(req.method==='OPTIONS')return new Response(null,{status:204,headers:h});if(u.pathname==='/health')return out({ok:true,mode:env.REAL_CHECKOUT_ENABLED==='true'?'guest-and-test':'test-only'});
+export default {
+async scheduled(_event,env) {
+  // A pause stops new orders. Holds already placed must still expire.
+  await expireInventoryHolds(env.DB);
+},
+async fetch(req,env){const u=new URL(req.url),h={'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':'https://wwbotanicals.org','Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS','Vary':'Origin'};const out=(v,s=200)=>new Response(JSON.stringify(v),{status:s,headers:h});if(req.method==='OPTIONS')return new Response(null,{status:204,headers:h});if(u.pathname==='/health')return out({ok:true,mode:env.REAL_CHECKOUT_ENABLED==='true'?'guest-and-test':'test-only'});
 if (u.pathname === '/checkout') {
   if (req.method !== 'POST') return out({error:'Method not allowed'},405);
   const origin = req.headers.get('Origin');
