@@ -71,6 +71,39 @@ collections:
         fields:
           - { label: Header Photo, name: header_photo, widget: image }
 
+  - name: menu_pages
+    label: Menu Pages
+    files:
+      - file: content/settings/menu-pages.json
+        label: Website Menu Pages
+        name: website_menu_pages
+        format: json
+        fields:
+          - label: "FDA Warning / Product Disclaimer"
+            name: disclaimer
+            widget: object
+            fields:
+              - { label: Menu Label and Page Heading, name: title, widget: string }
+              - { label: Page Text, name: body, widget: text }
+          - label: "Contact & Store Hours"
+            name: contact
+            widget: object
+            fields:
+              - { label: Menu Label and Page Heading, name: title, widget: string }
+              - { label: Page Text, name: body, widget: text }
+          - label: "Shipping & Returns"
+            name: shipping
+            widget: object
+            fields:
+              - { label: Menu Label and Page Heading, name: title, widget: string }
+              - { label: Page Text, name: body, widget: text }
+          - label: "About Wildwood & Willow"
+            name: about
+            widget: object
+            fields:
+              - { label: Menu Label and Page Heading, name: title, widget: string }
+              - { label: Page Text, name: body, widget: text }
+
   - name: coupons
     label: Coupon Codes
     files:
