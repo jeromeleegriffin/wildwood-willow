@@ -135,3 +135,22 @@ assert.equal((await real('/status','POST',{id:fixture.id,status:'completed'}))[0
 assert.equal((await real('/detail?id='+fixture.id))[1].history.length,4);
 assert.equal((await real('','DELETE',{id:fixture.id}))[0],404);
 console.log('Real order admin passed: sign-in, privacy, test isolation, unread state, inventory consumption, fulfillment history, and deletion protection.');
+
+const inventory = async (method,body,token='admin') => {
+  const req = new Request('https://test.local/inventory',{
+    method,headers:token ? {Authorization:'Bearer '+token} : {},
+    body:body===undefined ? undefined : JSON.stringify(body)
+  });
+  const res = await worker.fetch(req,{DB});
+  return [res.status,await res.json()];
+};
+assert.equal((await inventory('GET',undefined,''))[0],401);
+assert.equal((await inventory('POST',{slug:'new-fixture',onHand:2,expectedOnHand:null}))[0],200);
+assert.equal((await inventory('POST',{slug:'new-fixture',onHand:9,expectedOnHand:null}))[0],409);
+await savePendingOrder(DB,{...fixture,id:'ORDER-RESERVED',items:[{slug:'new-fixture',qty:2}]},Math.floor(Date.now()/1000)+300);
+assert.equal((await inventory('POST',{slug:'new-fixture',onHand:1,expectedOnHand:2}))[0],409);
+assert.equal((await inventory('POST',{slug:'new-fixture',onHand:4,expectedOnHand:2}))[0],200);
+assert.equal((await inventory('POST',{slug:'new-fixture',onHand:8,expectedOnHand:2}))[0],409);
+const current = (await inventory('GET'))[1].inventory.find(item=>item.product_slug==='new-fixture');
+assert.deepEqual({...current},{product_slug:'new-fixture',on_hand:4,reserved:2,available:2});
+console.log('Inventory admin passed: login, initialization, reservation protection, and stale count rejection.');
