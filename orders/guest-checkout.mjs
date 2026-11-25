@@ -42,8 +42,9 @@ export function validateGuestCheckout(body) {
   const city = requiredText(address?.city, 100, 'city');
   const region = requiredText(address?.region, 50, 'state or region');
   const postalCode = requiredText(address?.postalCode, 20, 'postal code');
+  if (!/^[0-9]{5}(?:-[0-9]{4})?$/.test(postalCode)) throw new TypeError('Enter a valid U.S. ZIP code.');
   return {
-    requestId, items, email, paymentMethod:body.paymentMethod,
+    postalCode, requestId, items, email, paymentMethod:body.paymentMethod,
     customerName:requiredText(body.customerName,120,'customer name'),
     phone:body.phone ? requiredText(body.phone,40,'phone number') : null,
     shippingAddress:[street,unit,city + ', ' + region + ' ' + postalCode].filter(Boolean).join('\n'),
