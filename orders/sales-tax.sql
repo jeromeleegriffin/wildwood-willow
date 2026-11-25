@@ -1,0 +1,1 @@
+ALTER TABLE orders ADD COLUMN tax_cents INTEGER NOT NULL DEFAULT 0 CHECK (tax_cents >= 0);
