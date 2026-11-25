@@ -81,6 +81,20 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
 .compact-catalog .photo{height:var(--catalog-photo-height,clamp(28px,8dvh,85px))}
 .compact-catalog .pager{padding:4px 0 max(4px,env(safe-area-inset-bottom));background:var(--cream)}
 .catalog-overflow .pager{position:sticky;bottom:0;z-index:5}
+@media(max-width:759px){
+.compact-catalog .header{padding:7px 12px 5px}
+.compact-catalog .back{padding:5px 14px}
+.compact-catalog nav.categories{margin:3px 0 5px}
+.compact-catalog .categories a{padding:4px 1px}
+.compact-catalog .categories a span{font-size:1.2rem;margin-bottom:1px}
+.compact-catalog .photo{height:var(--catalog-photo-height,clamp(52px,14dvh,105px));margin:5px 5px 1px}
+.compact-catalog .item-info{padding:2px 7px 5px}
+.compact-catalog .item h2{font-size:.84rem;line-height:1.08;margin-bottom:2px}
+.compact-catalog .item .price{font-size:.78rem;margin-bottom:2px}
+.compact-catalog .item p{font-size:.75rem;line-height:1.13;margin:2px 0}
+.compact-catalog .action{font-size:.76rem;margin-top:2px;padding-top:1px}
+.compact-catalog #items{gap:6px}
+}
 </style>
   <script src="/js/store-status.js?v=7" defer></script>
   <script src="/js/catalog.js?v=3"></script>
@@ -216,7 +230,7 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
      const preferred=Math.min(...photos.map(photo=>photo.getBoundingClientRect().height));
      if(photos.length){
        const excess=Math.max(0,...cards.map(card=>card.querySelector('.item-info').getBoundingClientRect().bottom-card.getBoundingClientRect().bottom+5));
-       list.style.setProperty('--catalog-photo-height',Math.max(24,Math.floor(preferred-excess-2))+'px');
+       list.style.setProperty('--catalog-photo-height',Math.max(48,Math.floor(preferred-excess-2))+'px');
      }
      const clipped=cards.some(card=>card.querySelector('.action').getBoundingClientRect().bottom>card.getBoundingClientRect().bottom-2);
      document.body.classList.toggle('catalog-overflow',clipped);
