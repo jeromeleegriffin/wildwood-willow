@@ -29,7 +29,7 @@ async function readBody(request) {
 function findOrder(db,id) {
   return db.prepare(`
     SELECT id, status, items_json, customer_name, email, phone, shipping_address,
-      payment_method, coupon, subtotal_cents, shipping_cents, discount_cents, total_cents,
+      payment_method, coupon, subtotal_cents, shipping_cents, discount_cents, tax_cents, total_cents,
       (SELECT MIN(expires_at) FROM inventory_holds WHERE order_id = orders.id) AS expires_at
     FROM orders WHERE id = ? AND is_test = 0
   `).bind(id).first();
@@ -39,7 +39,7 @@ function receipt(order) {
   return {
     id:order.id,status:order.status,subtotalCents:order.subtotal_cents,
     discountCents:order.discount_cents,shippingCents:order.shipping_cents,
-    totalCents:order.total_cents,holdExpiresAt:order.expires_at
+    taxCents:order.tax_cents,totalCents:order.total_cents,holdExpiresAt:order.expires_at
   };
 }
 
@@ -90,7 +90,7 @@ export async function submitGuestOrder(request, env, {fetchCatalog = fetch, date
     if (saved) return replay(saved,input);
     const quote = await quoteGuestOrder(input,{date,fetchCatalog});
     if (expectedTotalCents !== quote.totalCents) {
-      return response({code:'TOTAL_CHANGED',error:'The order total changed. Review the refreshed cart and submit again.'},409);
+      return response({code:'TOTAL_CHANGED',taxCents:quote.taxCents,totalCents:quote.totalCents,error:'The order total changed. Review the refreshed cart and submit again.'},409);
     }
     const expires = Math.floor(date.getTime()/1000) + holdSeconds;
     try {
@@ -106,7 +106,7 @@ export async function submitGuestOrder(request, env, {fetchCatalog = fetch, date
     return response({order:{
       id,status:'awaiting_payment',subtotalCents:quote.subtotalCents,
       discountCents:quote.discountCents,shippingCents:quote.shippingCents,
-      totalCents:quote.totalCents,holdExpiresAt:expires
+      taxCents:quote.taxCents,totalCents:quote.totalCents,holdExpiresAt:expires
     }},201);
   } catch (error) {
     if (error instanceof QuoteError) return response({error:error.message},422);
