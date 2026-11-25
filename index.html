@@ -142,9 +142,21 @@
       .store-home .hero p, .store-home .card p { font-size: .875rem; line-height: 1.2; }
       .store-home .card h3 { font-size: 1rem; }
       .store-home .card .price { font-size: .9rem; }
-      .store-home .card { padding-bottom: 27px; }
+      .store-home .card { padding-bottom: 24px; }
       .store-home .card .arrow { width: 20px; height: 20px; bottom: 4px; }
       .store-home .categories { padding-block: 4px; }
+    }
+    @media (min-width: 760px) and (max-height: 700px) {
+      .store-home .hero { min-height: 0; padding-block: 4px; }
+      .store-home .hero-text { padding: 6px 12px; }
+      .store-home .hero h1 { font-size: 1.22rem; }
+      .store-home .hero h1::after { height: 4px; margin-top: 2px; }
+      .store-home .hero p { margin-top: 3px; }
+      .store-home .hero-image img, .store-home .hero-logo img { height: 68px; }
+      .store-home .section h2 { font-size: 1rem; margin-bottom: 2px; }
+      .store-home .card { padding-inline: 7px; }
+      .store-home .card p { font-size: .8rem; }
+      .store-home .categories span { font-size: 1.05rem; }
     }
   </style>
   <script src="/js/menu-pages.js?v=2" defer></script>
