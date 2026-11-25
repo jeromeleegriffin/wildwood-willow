@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test Orders · Wildwood & Willow</title>
+<style>
+  body { max-width: 760px; margin: auto; padding: 20px; background: #f5f0e8; color: #263420; font: 16px/1.55 system-ui, sans-serif; }
+  a { color: #314a2c; }
+  button, input { font: inherit; }
+  button { padding: .55em .8em; color: #fff; background: #3e4f32; border: 0; border-radius: 6px; cursor: pointer; }
+  button:disabled { opacity: .55; }
+  nav, .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  article { background: #fff; border: 2px solid transparent; padding: 18px; margin-block: 14px; border-radius: 10px; overflow-wrap: anywhere; }
+  article.unread { border: 3px solid #a87a22; }
+  article h2 { margin: 0 0 .5em; font-size: 1.15rem; }
+  .badge { color: #fff; background: #9a2522; border-radius: .4em; padding: .2em .5em; }
+  .new { background: #f8e7ad; color: #4d3500; padding: .15em .45em; }
+  .danger { background: #8b2926; }
+  .details { margin-top: 16px; border-top: 1px solid #ddd5cb; padding-top: 12px; }
+  .details p { white-space: pre-line; }
+  input[type="checkbox"] { width: 1.2em; height: 1.2em; vertical-align: middle; }
+  input[type="text"] { padding: 8px; max-width: 100%; box-sizing: border-box; }
+</style>
+<nav><a href="./">Administrator panel</a><a href="test-order.html">Create a test order</a></nav>
+<h1>Test Orders <span id="count" class="badge" hidden></span></h1>
+<p>Simulated orders for administrator review. Actual charge is $0.00.</p>
+<div class="actions" id="actions">
+  <button id="refresh">Refresh</button>
+  <label><input id="unread" type="checkbox"> Unread only</label>
+  <button id="selected" class="danger" disabled>Delete selected</button>
+  <button id="all" class="danger" disabled>Delete all test orders</button>
+</div>
+<p id="message" role="status"></p>
+<div id="orders"></div>
+<script>
+const byId = id => document.getElementById(id);
+const endpoint = 'https://wildwood-willow-orders.jeromeleegriffin.workers.dev/test-orders';
+const checked = new Set();
+let orders = [], openId, detail, busy = false;
+const statuses = {
+  awaiting_payment:'Awaiting payment', payment_confirmed:'Payment confirmed',
+  shipped:'Shipped', completed:'Completed', cancelled:'Cancelled'
+};
+const money = cents => '$' + (cents / 100).toFixed(2);
+const date = stamp => new Date(stamp.includes('T') ? stamp : stamp.replace(' ', 'T') + 'Z').toLocaleString();
+function node(tag, content) {
+  const element = document.createElement(tag);
+  if (content != null) element.textContent = content;
+  return element;
+}
+function button(label, action, className = '') {
+  const element = node('button', label);
+  element.type = 'button';
+  element.onclick = action;
+  element.className = className;
+  return element;
+}
+async function request(path = '', method = 'GET', payload) {
+  const user = JSON.parse(localStorage.getItem('sveltia-cms.user') || 'null');
+  if (user?.backendName !== 'github' || !user.token) throw Error('Sign in through the administrator panel, then return here.');
+  const response = await fetch(endpoint + path, { method,
+    headers: {Authorization:'Bearer ' + user.token, 'Content-Type':'application/json'},
+    body: payload === undefined ? undefined : JSON.stringify(payload)
+  });
+  const result = await response.json();
+  if (!response.ok) throw Error(result.error || 'The order service could not complete the request.');
+  return result;
+}
+function loadDetail(id) {
+  return request('/detail?id=' + encodeURIComponent(id));
+}
+async function refresh() {
+  orders = await request();
+  for (const id of checked) if (!orders.some(order => order.id === id)) checked.delete(id);
+  if (openId && orders.some(order => order.id === openId)) detail = await loadDetail(openId);
+  else { openId = undefined; detail = undefined; }
+}
+async function run(action, success = '') {
+  if (busy) return;
+  busy = true;
+  byId('message').textContent = 'Working…';
+  document.querySelectorAll('#actions button, #orders button, #orders input').forEach(control => { control.disabled = true; });
+  try {
+    await action();
+    byId('message').textContent = success;
+  } catch (error) {
+    byId('message').textContent = error.message;
+  } finally {
+    busy = false;
+    render();
+  }
+}
+function changeStatus(id, status, tracking) {
+  run(async () => {
+    await request('/status', 'POST', {id, status, tracking});
+    await refresh();
+  }, 'Order status updated.');
+}
+function remove(payload, label) {
+  if (!confirm(label + ' This permanently deletes the selected test records and their history.')) return;
+  run(async () => {
+    await request('', 'DELETE', {...payload, confirm:'DELETE TEST ORDERS'});
+    if (payload.all) checked.clear();
+    await refresh();
+  }, 'Test orders deleted.');
+}
+function showDetails(card, order, history) {
+  const section = node('section');
+  section.className = 'details';
+  section.append(node('h3','Customer and shipping'), node('p',[order.customer_name,order.email,order.phone,order.shipping_address].filter(Boolean).join('\n')));
+  const items = node('ul');
+  for (const item of JSON.parse(order.items_json)) items.append(node('li',item.qty + ' × ' + item.title + ' · ' + money(item.qty * item.price_cents)));
+  section.append(node('h3','Items'),items,node('h3','Payment and fulfillment'),node('p',[
+    'Merchandise ' + money(order.subtotal_cents),
+    'Discount ' + money(order.discount_cents) + (order.coupon ? ' (' + order.coupon + ')' : ''),
+    'Shipping ' + money(order.shipping_cents), 'Simulated total ' + money(order.total_cents),
+    'Actual charge $0.00', 'Method ' + (order.payment_method === 'cashapp' ? 'Cash App' : 'Venmo'),
+    'Status ' + statuses[order.status], order.tracking_number ? 'Tracking ' + order.tracking_number : ''
+  ].filter(Boolean).join('\n')));
+  const actions = node('div');
+  actions.className = 'actions';
+  if (order.status === 'awaiting_payment') actions.append(button('Confirm simulated payment',() => changeStatus(order.id,'payment_confirmed')));
+  if (order.status === 'payment_confirmed') {
+    const label = node('label','Tracking number ');
+    const tracking = node('input');
+    tracking.type = 'text';
+    tracking.maxLength = 120;
+    label.append(tracking);
+    actions.append(label,button('Mark shipped',() => changeStatus(order.id,'shipped',tracking.value)));
+  }
+  if (order.status === 'shipped') actions.append(button('Mark completed',() => changeStatus(order.id,'completed')));
+  if (['awaiting_payment','payment_confirmed'].includes(order.status)) {
+    actions.append(button('Cancel test order',() => {
+      if (confirm('Cancel this test order?')) changeStatus(order.id,'cancelled');
+    }));
+  }
+  actions.append(button('Mark as unread',() => run(async () => {
+    await request('/view','POST',{id:order.id,unread:true});
+    openId = undefined;
+    await refresh();
+  },'Order marked unread.')));
+  const timeline = node('ol');
+  for (const event of history) timeline.append(node('li', (statuses[event.status] || event.status) + ' · ' + date(event.created_at)));
+  section.append(actions,node('h3','Order history'),timeline);
+  card.append(section);
+}
+function render() {
+  const count = orders.filter(order => !order.first_viewed_at).length;
+  byId('count').textContent = count + ' unread';
+  byId('count').hidden = false;
+  byId('selected').disabled = !checked.size;
+  byId('all').disabled = !orders.length;
+  byId('refresh').disabled = false;
+  const list = byId('orders');
+  list.replaceChildren();
+  const visible = orders.filter(order => !byId('unread').checked || !order.first_viewed_at || order.id === openId);
+  if (!visible.length && !byId('message').textContent) list.append(node('p',byId('unread').checked ? 'No unread test orders.' : 'No test orders yet.'));
+  for (const order of visible) {
+    const card = node('article');
+    const title = node('h2',order.customer_name + ' ');
+    if (!order.first_viewed_at) {
+      card.className = 'unread';
+      const badge = node('span','NEW');
+      badge.className = 'new';
+      title.append(badge);
+    }
+    const actions = node('div');
+    actions.className = 'actions';
+    const checkbox = node('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = checked.has(order.id);
+    checkbox.onchange = () => {
+      if (checkbox.checked && checked.size >= 50) {
+        checkbox.checked = false;
+        byId('message').textContent = 'Select up to 50 test orders at a time.';
+        return;
+      }
+      if (checkbox.checked) checked.add(order.id); else checked.delete(order.id);
+      byId('selected').disabled = !checked.size;
+    };
+    const label = node('label',' Select');
+    label.prepend(checkbox);
+    actions.append(label,button(openId === order.id ? 'Close details' : 'Open order', () => run(async () => {
+      if (openId === order.id) { openId = undefined; detail = undefined; return; }
+      await loadDetail(order.id);
+      await request('/view','POST',{id:order.id});
+      openId = order.id;
+      await refresh();
+    })),button('Delete test order',() => remove({id:order.id},'Delete this test order?'),'danger'));
+    card.append(title,node('p',order.id),node('p',date(order.created_at) + ' · ' + statuses[order.status] + ' · ' + money(order.total_cents)),actions);
+    if (openId === order.id && detail?.order.id === openId) showDetails(card,detail.order,detail.history);
+    list.append(card);
+  }
+}
+byId('unread').onchange = () => { if (!busy) render(); };
+byId('refresh').onclick = () => run(refresh);
+byId('selected').onclick = () => remove({ids:[...checked]},'Delete ' + checked.size + ' selected test orders?');
+byId('all').onclick = () => remove({all:true},'Delete all test orders?');
+run(refresh);
+</script>
+</html>
