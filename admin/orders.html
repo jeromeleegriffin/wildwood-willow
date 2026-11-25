@@ -122,7 +122,8 @@ function showDetails(card, order, history) {
   section.append(node('h3','Items'),items,node('h3','Payment and fulfillment'),node('p',[
     'Merchandise ' + money(order.subtotal_cents),
     'Discount ' + money(order.discount_cents) + (order.coupon ? ' (' + order.coupon + ')' : ''),
-    'Shipping ' + money(order.shipping_cents), (real ? 'Total ' : 'Simulated total ') + money(order.total_cents),
+    'Shipping ' + money(order.shipping_cents),
+    real && order.tax_cents ? 'Sales tax ' + money(order.tax_cents) : '', (real ? 'Total ' : 'Simulated total ') + money(order.total_cents),
     real ? '' : 'Actual charge $0.00', 'Method ' + (order.payment_method === 'cashapp' ? 'Cash App' : 'Venmo'),
     'Status ' + statuses[order.status], order.tracking_number ? 'Tracking ' + order.tracking_number : ''
   ].filter(Boolean).join('\n')));
