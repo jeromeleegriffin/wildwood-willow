@@ -1,5 +1,5 @@
 (() => {
-  const keys = new Set(['disclaimer','contact','shipping','about']);
+  const keys = new Set(['disclaimer','contact','shipping','about','social']);
   const labels = document.querySelectorAll('[data-menu-label]');
   const page = document.querySelector('[data-menu-page]');
   const requested = page?.dataset.menuPage === 'selected' ? new URLSearchParams(location.search).get('page') : page?.dataset.menuPage;
@@ -26,6 +26,17 @@
       if (title) link.textContent = title;
     }
     if (!key) return;
+    if (key === 'social') {
+      const link = document.getElementById('facebook-link');
+      try {
+        const url = new URL(data.social.facebook_url);
+        if (url.protocol === 'https:' && !url.username && !url.password &&
+            ['facebook.com','www.facebook.com','m.facebook.com'].includes(url.hostname)) {
+          link.href = url.href;
+          link.parentElement.hidden = false;
+        }
+      } catch {}
+    }
     const title = clean(data[key]?.title);
     const copy = clean(data[key]?.body);
     if (!title || !copy) throw Error('Page content unavailable');
