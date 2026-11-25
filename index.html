@@ -25,6 +25,13 @@
   <link rel="stylesheet" href="css/style.css?v=100">
   <script src="/js/store-status.js?v=7" defer></script>
   <script src="/js/catalog.js?v=3"></script>
+  <style>
+    .site-menu { position: relative; z-index: 3; }
+    .site-menu summary { list-style: none; cursor: pointer; padding: 6px; }
+    .site-menu summary::-webkit-details-marker { display: none; }
+    .site-menu nav { position: absolute; inset-inline-end: 0; top: 100%; width: max-content; max-width: 75vw; background: #fffdf8; border: 1px solid #c5b9ab; border-radius: 8px; box-shadow: 0 4px 14px #0002; }
+    .site-menu a { display: block; padding: 12px 16px; color: #3e4f32; }
+  </style>
 </head>
 <body>
   <header class="header">
@@ -33,7 +40,10 @@
         <div class="name">WILDWOOD & WILLOW</div>
         <div class="sub">BOTANICALS</div>
       </div>
-      <div class="menu">☰</div>
+      <details class="site-menu">
+        <summary class="menu" aria-label="Open site menu">☰</summary>
+        <nav aria-label="Site menu"><a href="disclaimer.html">Product Disclaimer</a></nav>
+      </details>
     </div>
   <img src="images/header-willow.png" class="header-willow" alt="">
   </header>
