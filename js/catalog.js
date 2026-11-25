@@ -7,7 +7,7 @@
   const base = 'https://raw.githubusercontent.com/' + owner + '/' + repository + '/main/';
   const api = 'https://api.github.com/repos/' + owner + '/' + repository + '/contents/content/';
   const known = {
-    products: ['arnica-aloe-cream','mental-reset','nerve-pain-relaxant','appetite-suppressant'],
+    products: ['arnica-aloe-cream','mental-reset','nerve-pain-relaxant','appetite-suppressant','botanical-allergy-relief','collagen-berry-bloom','ginger-hemp-protein','glucosamine','hair-scalp-serum','immune-defense','lung-support','lymphatic-cleanse','nerve-pain-relaxant-1','shingles-fever-blister-relief'],
     services: ['reflexology','vibration-therapy','foot-detox','massage-chair']
   };
 
@@ -78,7 +78,7 @@
       const names = list.filter(f => f.type === 'file' && /^[a-z0-9_-]+\.md$/i.test(f.name))
         .map(f => f.name.slice(0,-3));
       // Preserve existing display order; CMS additions are included automatically.
-      return [...new Set([...known[folder], ...names])];
+      return [...new Set([...known[folder].filter(name=>names.includes(name)), ...names])];
     } catch (err) {
       return [...known[folder]];
     }
