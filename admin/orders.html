@@ -22,9 +22,9 @@
   input[type="checkbox"] { width: 1.2em; height: 1.2em; vertical-align: middle; }
   input[type="text"] { padding: 8px; max-width: 100%; box-sizing: border-box; }
 </style>
-<nav><a href="./">Administrator panel</a><a href="test-order.html">Create a test order</a></nav>
-<h1 class="orders-heading">Test Orders <span id="count" class="badge" hidden></span></h1>
-<p>Simulated orders for administrator review. Actual charge is $0.00.</p>
+<nav><a href="./">Administrator panel</a><a href="orders.html?view=real">Real orders</a><a href="orders.html">Test orders</a><a href="test-order.html">Create a test order</a></nav>
+<h1 class="orders-heading"><span id="orders-title">Test Orders</span> <span id="count" class="badge" hidden></span></h1>
+<p id="orders-description">Simulated orders for administrator review. Actual charge is $0.00.</p>
 <div class="actions" id="actions">
   <button id="refresh">Refresh</button>
   <label><input id="unread" type="checkbox"> Unread only</label>
@@ -35,7 +35,15 @@
 <div id="orders"></div>
 <script>
 const byId = id => document.getElementById(id);
-const endpoint = 'https://wildwood-willow-orders.jeromeleegriffin.workers.dev/test-orders';
+const real = new URLSearchParams(location.search).get('view') === 'real';
+const endpoint = 'https://wildwood-willow-orders.jeromeleegriffin.workers.dev/' + (real ? 'orders' : 'test-orders');
+if (real) {
+  document.title = 'Real Orders · Wildwood & Willow';
+  byId('orders-title').textContent = 'Real Orders';
+  byId('orders-description').textContent = 'Confirm payment only after verifying it in Cash App or Venmo.';
+  byId('selected').hidden = true;
+  byId('all').hidden = true;
+}
 const checked = new Set();
 let orders = [], openId, detail, busy = false;
 const statuses = {
@@ -114,13 +122,15 @@ function showDetails(card, order, history) {
   section.append(node('h3','Items'),items,node('h3','Payment and fulfillment'),node('p',[
     'Merchandise ' + money(order.subtotal_cents),
     'Discount ' + money(order.discount_cents) + (order.coupon ? ' (' + order.coupon + ')' : ''),
-    'Shipping ' + money(order.shipping_cents), 'Simulated total ' + money(order.total_cents),
-    'Actual charge $0.00', 'Method ' + (order.payment_method === 'cashapp' ? 'Cash App' : 'Venmo'),
+    'Shipping ' + money(order.shipping_cents), (real ? 'Total ' : 'Simulated total ') + money(order.total_cents),
+    real ? '' : 'Actual charge $0.00', 'Method ' + (order.payment_method === 'cashapp' ? 'Cash App' : 'Venmo'),
     'Status ' + statuses[order.status], order.tracking_number ? 'Tracking ' + order.tracking_number : ''
   ].filter(Boolean).join('\n')));
   const actions = node('div');
   actions.className = 'actions';
-  if (order.status === 'awaiting_payment') actions.append(button('Confirm simulated payment',() => changeStatus(order.id,'payment_confirmed')));
+  if (order.status === 'awaiting_payment') actions.append(button(real ? 'Confirm payment' : 'Confirm simulated payment',() => {
+    if (!real || confirm('Have you verified that the customer’s payment was received?')) changeStatus(order.id,'payment_confirmed');
+  }));
   if (order.status === 'payment_confirmed') {
     const label = node('label','Tracking number ');
     const tracking = node('input');
@@ -130,9 +140,9 @@ function showDetails(card, order, history) {
     actions.append(label,button('Mark shipped',() => changeStatus(order.id,'shipped',tracking.value)));
   }
   if (order.status === 'shipped') actions.append(button('Mark completed',() => changeStatus(order.id,'completed')));
-  if (['awaiting_payment','payment_confirmed'].includes(order.status)) {
-    actions.append(button('Cancel test order',() => {
-      if (confirm('Cancel this test order?')) changeStatus(order.id,'cancelled');
+  if (order.status === 'awaiting_payment' || (!real && order.status === 'payment_confirmed')) {
+    actions.append(button(real ? 'Cancel unpaid order' : 'Cancel test order',() => {
+      if (confirm(real ? 'Cancel this unpaid order and release its reserved stock?' : 'Cancel this test order?')) changeStatus(order.id,'cancelled');
     }));
   }
   actions.append(button('Mark as unread',() => run(async () => {
@@ -155,7 +165,7 @@ function render() {
   const list = byId('orders');
   list.replaceChildren();
   const visible = orders.filter(order => !byId('unread').checked || !order.first_viewed_at || order.id === openId);
-  if (!visible.length && !byId('message').textContent) list.append(node('p',byId('unread').checked ? 'No unread test orders.' : 'No test orders yet.'));
+  if (!visible.length && !byId('message').textContent) list.append(node('p',byId('unread').checked ? 'No unread orders.' : (real ? 'No real orders yet.' : 'No test orders yet.')));
   for (const order of visible) {
     const card = node('article');
     const title = node('h2',order.customer_name + ' ');
@@ -181,13 +191,15 @@ function render() {
     };
     const label = node('label',' Select');
     label.prepend(checkbox);
-    actions.append(label,button(openId === order.id ? 'Close details' : 'Open order', () => run(async () => {
+    if (!real) actions.append(label);
+    actions.append(button(openId === order.id ? 'Close details' : 'Open order', () => run(async () => {
       if (openId === order.id) { openId = undefined; detail = undefined; return; }
       await loadDetail(order.id);
       await request('/view','POST',{id:order.id});
       openId = order.id;
       await refresh();
-    })),button('Delete test order',() => remove({id:order.id},'Delete this test order?'),'danger'));
+    })));
+    if (!real) actions.append(button('Delete test order',() => remove({id:order.id},'Delete this test order?'),'danger'));
     card.append(title,node('p',order.id),node('p',date(order.created_at) + ' · ' + statuses[order.status] + ' · ' + money(order.total_cents)),actions);
     if (openId === order.id && detail?.order.id === openId) showDetails(card,detail.order,detail.history);
     list.append(card);
