@@ -83,7 +83,7 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
 .catalog-overflow .pager{position:sticky;bottom:0;z-index:5}
 </style>
   <script src="/js/store-status.js?v=7" defer></script>
-  <script src="/js/catalog.js?v=2"></script>
+  <script src="/js/catalog.js?v=3"></script>
 </head>
 <body>
 <header class="header">
@@ -129,6 +129,8 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
  function resizeCatalog(){const first=page*perPage;perPage=matchMedia('(min-width:760px)').matches?6:4;page=Math.floor(first/perPage);render(allItems)}
  window.addEventListener('resize',resizeCatalog);
  window.visualViewport?.addEventListener('resize',resizeCatalog);
+ const layoutObserver=new ResizeObserver(()=>fitCatalog());
+ layoutObserver.observe(list);
  function changePage(delta){page=Math.max(0,Math.min(Math.ceil(allItems.length/perPage)-1,page+delta));render(allItems)}
  prev.addEventListener('click',()=>changePage(-1));next.addEventListener('click',()=>changePage(1));
   // Horizontal swipes change pages; ordinary taps still open the selected item.
@@ -171,6 +173,7 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
  overlay.addEventListener('click',e=>{if(e.target===overlay)closeService()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)closeService()});
  function render(items){
+   document.body.classList.remove('catalog-overflow');
    allItems=items;
    const pages=Math.max(1,Math.ceil(items.length/perPage));page=Math.max(0,Math.min(page,pages-1));
    pager.hidden=pages<=1;prev.disabled=page===0;next.disabled=page===pages-1;
@@ -203,19 +206,20 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
      const action=document.createElement('span');action.className='action';action.textContent=services?'More information':'View product';info.append(action);
      card.append(photo,info);list.append(card);
    })
-   requestAnimationFrame(()=>{
-     document.body.classList.remove('catalog-overflow');
+   requestAnimationFrame(fitCatalog);
+ }
+ function fitCatalog(){
+     if(document.body.classList.contains('catalog-overflow'))return;
      const cards=[...list.querySelectorAll('.item')];
      list.style.removeProperty('--catalog-photo-height');
      const photos=cards.map(card=>card.querySelector('.photo'));
      const preferred=Math.min(...photos.map(photo=>photo.getBoundingClientRect().height));
      if(photos.length){
-       const excess=Math.max(0,...cards.map(card=>card.scrollHeight-card.clientHeight));
+       const excess=Math.max(0,...cards.map(card=>card.querySelector('.item-info').getBoundingClientRect().bottom-card.getBoundingClientRect().bottom+5));
        list.style.setProperty('--catalog-photo-height',Math.max(24,Math.floor(preferred-excess-2))+'px');
      }
-     const clipped=cards.some(card=>card.scrollHeight>card.clientHeight+1);
+     const clipped=cards.some(card=>card.querySelector('.action').getBoundingClientRect().bottom>card.getBoundingClientRect().bottom-2);
      document.body.classList.toggle('catalog-overflow',clipped);
-   });
  }
  async function init(){
    const folder=services?'services':'products';
