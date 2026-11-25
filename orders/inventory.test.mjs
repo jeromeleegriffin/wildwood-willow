@@ -131,7 +131,7 @@ const env = {DB:adapter,REAL_CHECKOUT_ENABLED:'true'};
 const guest = {
   requestId:crypto.randomUUID(), customerName:'Guest', email:'guest@example.com',
   address:{street:'123 Main',city:'Test',region:'TN',postalCode:'00000'},
-  items:[{slug:'handler-fixture',qty:1,price_cents:1}],paymentMethod:'cashapp',totalCents:1
+  items:[{slug:'handler-fixture',qty:1,price_cents:1}],paymentMethod:'cashapp',totalCents:1,expectedTotalCents:1600
 };
 function submit(details, settings = env) {
   return submitGuestOrder(new Request('https://example.com/checkout',{
@@ -140,6 +140,11 @@ function submit(details, settings = env) {
 }
 assert.equal((await submit(guest,{DB:adapter})).status,503);
 assert.equal((await submit({...guest,customerName:'x'.repeat(17000)})).status,400);
+const priceChange = await submit({...guest,expectedTotalCents:1500});
+assert.equal(priceChange.status,409);
+assert.equal((await priceChange.json()).code,'TOTAL_CHANGED');
+assert.deepEqual(stock('handler-fixture'),[1,0]);
+assert.equal((await submit({...guest,expectedTotalCents:undefined})).status,400);
 const [one,two] = await Promise.all([submit(guest),submit(guest)]);
 assert.deepEqual([one.status,two.status].sort(),[200,201]);
 const result = await one.json();
