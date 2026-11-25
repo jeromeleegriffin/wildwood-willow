@@ -1,9 +1,149 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Test Checkout</title><style>body{font:16px Georgia;background:#f5f0e8;color:#3e4f32;max-width:640px;margin:20px auto;padding:16px}label{display:block;margin:10px 0}input,select,button{font:inherit;padding:9px;box-sizing:border-box;max-width:100%}input,select{width:100%}button{background:#3e4f32;color:white;border:0;border-radius:8px;cursor:pointer}section{background:white;padding:16px;border-radius:10px;margin:12px 0}pre{white-space:pre-wrap;font:inherit}</style><a href="./">Back to Admin</a><h1>Admin Test Checkout</h1><p>SIMULATION ONLY. No real payment, order, email or inventory change. Use fictional customer details.</p><section><h2>1. Test cart</h2><select id="product"></select><label>Quantity<input id="qty" type="number" min="1" max="99" value="1"></label><button id="add" disabled>Add product</button><div id="items"></div><label>Coupon<input id="coupon" placeholder="Optional coupon code"></label><button id="apply">Apply coupon</button><p id="notice" role="status"></p><pre id="total"></pre></section><section><h2>2. Contact and shipping</h2><form id="checkout"><label>Name<input required value="Test Customer"></label><label>Email<input required type="email" value="test@example.com"></label><label>Phone<input type="tel" value="555-0100"></label><label>Shipping address<input required value="123 Test Street"></label><label>City, state, ZIP<input required value="Test City, TN 00000"></label><h2>3. Payment</h2><label>Method<select id="method"><option>Cash App</option><option>Venmo</option></select></label><button id="submit" disabled>Simulate payment and place test order</button></form></section><section id="receipt" hidden><h2>Test order confirmation</h2><pre id="result"></pre><button onclick="window.print()">Print receipt</button> <button onclick="location.reload()">New test order</button></section><script src="/js/catalog.js?v=4"></script><script>
-const $=id=>document.getElementById(id),money=n=>'$'+(n/100).toFixed(2);let products=[],cart=[],coupon=null,done=false;const base='https://raw.githubusercontent.com/jeromeleegriffin/wildwood-willow/main/content/settings/coupons.json';
-function totals(){let subtotal=cart.reduce((s,p)=>s+p.price*p.qty,0),shipping=subtotal&&subtotal<=10000?800:0,discount=0;if(coupon&&subtotal>=Number(coupon.minimum||0)*100){if(coupon.type==='shipping')shipping=0;else if(coupon.type==='percent')discount=Math.min(subtotal,Math.round(subtotal*Number(coupon.amount)/100));else if(coupon.type==='fixed')discount=Math.min(subtotal,Math.round(Number(coupon.amount)*100));}return {subtotal,shipping,discount,total:subtotal+shipping-discount}}
-function render(){ $('items').replaceChildren();cart.forEach((p,i)=>{const row=document.createElement('p'),b=document.createElement('button');row.textContent=p.qty+' × '+p.title+' '+money(p.qty*p.price)+' ';b.textContent='Remove';b.onclick=()=>{cart.splice(i,1);render()};row.append(b);$('items').append(row)});const t=totals();$('total').textContent='Subtotal: '+money(t.subtotal)+'\nDiscount: '+money(t.discount)+'\nShipping: '+money(t.shipping)+'\nSimulated total: '+money(t.total);$('submit').disabled=!cart.length||done}
-(async()=>{try{products=(await WWCatalog.list('products')).map(p=>({...p,price:Math.round(Number(String(p.price).replace(/[$,]/g,''))*100)})).filter(p=>Number.isFinite(p.price)&&p.price>=0);products.forEach((p,i)=>$('product').add(new Option(p.title+' '+money(p.price),i)));$('add').disabled=!products.length}catch{$('notice').textContent='Unable to load catalog'}})();
-$('add').onclick=()=>{const p=products[Number($('product').value)],q=Number($('qty').value);if(!p||!Number.isInteger(q)||q<1||q>99||done)return;const old=cart.find(x=>x.slug===p.slug);if(old)old.qty+=q;else cart.push({...p,qty:q});render()};
-$('apply').onclick=async()=>{coupon=null;try{const code=$('coupon').value.trim().toUpperCase();if(!code){$('notice').textContent='Coupon removed';return}const r=await fetch(base+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error();const matches=(await r.json()).coupons.filter(c=>String(c.code).toUpperCase()===code&&c.enabled===true);const c=matches[0];if(matches.length!==1||!['shipping','percent','fixed'].includes(c.type)||c.expires||!Number.isFinite(Number(c.minimum||0))||Number(c.minimum||0)<0||(c.type!=='shipping'&&(!Number.isFinite(Number(c.amount))||Number(c.amount)<=0)))throw Error();coupon=c;$('notice').textContent='Test coupon applied if minimum is met.'}catch{$('notice').textContent='Coupon unavailable. Dated coupons are not supported in this test preview.'}finally{render()}};
-$('checkout').onsubmit=e=>{e.preventDefault();if(done||!cart.length)return;done=true;const id='TEST-'+crypto.randomUUID().toUpperCase(),t=totals();$('result').textContent='Order '+id+'\n'+new Date().toLocaleString()+'\n'+cart.map(p=>p.qty+' × '+p.title).join('\n')+'\nSimulated total: '+money(t.total)+'\nPayment method: '+$('method').value+' (simulated)\nActual charge: $0.00\nStatus: TEST COMPLETE\nNo real order submitted.';$('receipt').hidden=false;document.querySelectorAll('form input,form select,#add,#apply').forEach(x=>x.disabled=true);render();$('receipt').scrollIntoView()};render();
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Test Checkout</title><style>body{font:16px Georgia;background:#f5f0e8;color:#3e4f32;max-width:640px;margin:20px auto;padding:16px}label{display:block;margin:10px 0}input,select,button{font:inherit;padding:9px;box-sizing:border-box;max-width:100%}input,select{width:100%}button{background:#3e4f32;color:white;border:0;border-radius:8px;cursor:pointer}section{background:white;padding:16px;border-radius:10px;margin:12px 0}pre{white-space:pre-wrap;font:inherit}</style><a href="./">Sign in or return to Admin</a><h1>Admin Test Checkout</h1><p>SIMULATION ONLY. Test orders are saved for admin review. Actual charge is $0.00. Use fictional customer details.</p><section><h2>1. Test cart</h2><select id="product"></select><label>Quantity<input id="qty" type="number" min="1" max="99" value="1"></label><button id="add" disabled>Add product</button><div id="items"></div><label>Coupon<input id="coupon" placeholder="Optional coupon code"></label><button id="apply">Apply coupon</button><p id="notice" role="status"></p><pre id="total"></pre></section><section><h2>2. Contact and shipping</h2><form id="checkout"><label>Name<input name="name" required maxlength="120" value="Test Customer"></label><label>Email<input name="email" required type="email" maxlength="200" value="test@example.com"></label><label>Phone<input name="phone" type="tel" maxlength="40" value="202-555-0100"></label><label>Shipping address<input name="street" required maxlength="200" value="123 Test Street"></label><label>City, state, ZIP<input name="city" required maxlength="200" value="Test City, TN 00000"></label><h2>3. Payment</h2><label>Method<select id="method"><option value="cashapp">Cash App</option><option value="venmo">Venmo</option></select></label><button id="submit" disabled>Simulate payment and place test order</button><p id="submit-status" role="status"></p></form></section><section id="receipt" hidden><h2>Test order confirmation</h2><pre id="result"></pre><button onclick="window.print()">Print receipt</button> <button onclick="location.reload()">New test order</button></section><script src="/js/catalog.js?v=4"></script>
+<script>
+const byId = id => document.getElementById(id);
+const money = cents => '$' + (cents / 100).toFixed(2);
+const endpoint = 'https://wildwood-willow-orders.jeromeleegriffin.workers.dev/test-orders';
+const cart = new Map();
+let products = [], busy = false, done = false, quoteVersion = 0;
+
+async function request(path, payload) {
+  const user = JSON.parse(localStorage.getItem('sveltia-cms.user') || 'null');
+  if (user?.backendName !== 'github' || !user.token) {
+    throw Error('Sign in through the administrator panel, then return here.');
+  }
+  const response = await fetch(endpoint + path, {
+    method: 'POST', headers: {Authorization: 'Bearer ' + user.token, 'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  });
+  const result = await response.json();
+  if (!response.ok) throw Error(result.error || 'The order service could not complete the request.');
+  return result;
+}
+
+function selection() {
+  return {items: Array.from(cart, ([slug, qty]) => ({slug, qty})), coupon: byId('coupon').value.trim()};
+}
+
+function showTotal(t) {
+  byId('total').textContent = [
+    'Subtotal  ' + money(t.subtotal_cents),
+    'Discount  ' + money(t.discount_cents),
+    'Shipping  ' + money(t.shipping_cents),
+    'Simulated total  ' + money(t.total_cents),
+    'Actual charge  $0.00'
+  ].join('\n');
+}
+
+function updateControls() {
+  byId('checkout').querySelectorAll('input, select').forEach(control => { control.disabled = busy || done; });
+  byId('items').querySelectorAll('input, button').forEach(control => { control.disabled = busy || done; });
+  byId('submit').disabled = !cart.size || busy || done;
+  byId('add').disabled = !products.length || busy || done;
+  for (const id of ['product', 'qty', 'coupon', 'apply']) byId(id).disabled = busy || done;
+}
+
+async function quote() {
+  const version = ++quoteVersion;
+  byId('total').textContent = '';
+  byId('notice').textContent = cart.size ? 'Calculating totals…' : '';
+  if (!cart.size) return;
+  try {
+    const result = await request('/quote', selection());
+    if (version !== quoteVersion) return;
+    showTotal(result);
+    byId('notice').textContent = byId('coupon').value.trim() ? 'Coupon applied.' : '';
+  } catch (error) {
+    if (version === quoteVersion) byId('notice').textContent = error.message;
+  }
+}
+
+function renderCart() {
+  byId('items').replaceChildren();
+  for (const [slug, qty] of cart) {
+    const label = document.createElement('label');
+    const title = products.find(product => product.slug === slug).title;
+    label.textContent = title;
+    const quantity = document.createElement('input');
+    Object.assign(quantity, {type:'number', min:'1', max:'99', value:qty});
+    quantity.onchange = () => {
+      if (!quantity.checkValidity() || !quantity.value) { quantity.value = cart.get(slug); return; }
+      cart.set(slug, quantity.valueAsNumber);
+      quote();
+    };
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.textContent = 'Remove ' + title;
+    remove.onclick = () => { cart.delete(slug); renderCart(); };
+    label.append(quantity);
+    byId('items').append(label, remove);
+  }
+  updateControls();
+  quote();
+}
+
+(async () => {
+  try {
+    products = (await WWCatalog.list('products')).filter(product => product.slug && product.title);
+    products.forEach((product, index) => byId('product').add(new Option(product.title, index)));
+    if (!products.length) byId('notice').textContent = 'No products found.';
+  } catch {
+    byId('notice').textContent = 'Unable to load the catalog.';
+  }
+  updateControls();
+})();
+byId('add').onclick = () => {
+  const product = products[Number(byId('product').value)];
+  const qty = byId('qty').valueAsNumber + (cart.get(product?.slug) || 0);
+  if (!product || !Number.isInteger(qty) || qty < 1 || qty > 99) {
+    byId('notice').textContent = 'Enter a quantity between 1 and 99 per product.';
+    return;
+  }
+  if (!cart.has(product.slug) && cart.size >= 40) {
+    byId('notice').textContent = 'Choose up to 40 different products.';
+    return;
+  }
+  cart.set(product.slug, qty);
+  renderCart();
+};
+byId('coupon').oninput = () => {
+  ++quoteVersion;
+  byId('total').textContent = '';
+  byId('notice').textContent = 'Apply coupon to refresh totals.';
+};
+byId('apply').onclick = quote;
+byId('checkout').onsubmit = async event => {
+  event.preventDefault();
+  if (busy || done || !cart.size) return;
+  const fields = new FormData(event.currentTarget);
+  const payload = {...selection(), name:fields.get('name'), email:fields.get('email'),
+    phone:fields.get('phone'), address:fields.get('street') + '\n' + fields.get('city'), method:byId('method').value};
+  busy = true;
+  updateControls();
+  try {
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(payload)));
+    const fingerprint = Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2,'0')).join('');
+    const key = 'ww-test-order:' + fingerprint;
+    payload.requestId = sessionStorage.getItem(key) || crypto.randomUUID();
+    sessionStorage.setItem(key, payload.requestId);
+    const result = await request('', payload);
+    const order = result.order;
+    done = true;
+    ++quoteVersion;
+    sessionStorage.removeItem(key);
+    byId('submit-status').textContent = 'Test order saved.';
+    showTotal(order);
+    byId('result').textContent = [
+      order.id, ...JSON.parse(order.items_json).map(item => item.qty + ' × ' + item.title),
+      'Simulated total  ' + money(order.total_cents), 'Actual charge  ' + money(result.actual_charge_cents),
+      'Awaiting administrator payment confirmation'
+    ].join('\n');
+    byId('receipt').hidden = false;
+    byId('receipt').scrollIntoView();
+  } catch (error) {
+    byId('submit-status').textContent = error.message;
+  } finally {
+    busy = false;
+    updateControls();
+  }
+};
 </script></html>
