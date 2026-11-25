@@ -70,3 +70,23 @@ collections:
         name: header
         fields:
           - { label: Header Photo, name: header_photo, widget: image }
+
+  - name: coupons
+    label: Coupon Codes
+    files:
+      - file: content/settings/coupons.json
+        label: Manage Coupon Codes
+        name: coupon_settings
+        format: json
+        fields:
+          - label: Coupons
+            name: coupons
+            widget: list
+            required: false
+            fields:
+              - {label: Code, name: code, widget: string, pattern: ['^[A-Za-z0-9_-]+$', 'Use letters, numbers, hyphens or underscores']}
+              - {label: Enabled, name: enabled, widget: boolean, default: true}
+              - {label: Discount Type, name: type, widget: select, options: [{label: Percentage, value: percent}, {label: Fixed Dollars, value: fixed}]}
+              - {label: Discount Amount, name: amount, widget: number, value_type: float, min: 0.01, hint: 'Enter 10 for 10% or $10, depending on type. Percentage cannot exceed 100.'}
+              - {label: Minimum Merchandise Subtotal, name: minimum, widget: number, value_type: float, min: 0, default: 0}
+              - {label: Expiration Date, name: expires, widget: datetime, date_format: YYYY-MM-DD, time_format: false, format: YYYY-MM-DD, required: false, hint: 'Valid through this date in Central Time.'}
