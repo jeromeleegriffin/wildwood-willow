@@ -95,6 +95,15 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
 .compact-catalog .action{font-size:.76rem;margin-top:2px;padding-top:1px}
 .compact-catalog #items{gap:6px}
 }
+/* Match homepage thumbnail presentation; full originals remain on product pages. */
+.compact-catalog .photo img{object-fit:cover;object-position:center}
+.compact-catalog .photo img.product-thumbnail{object-fit:cover;object-position:center}
+@media(max-width:759px){
+.compact-catalog .photo{height:var(--catalog-photo-height,clamp(58px,13dvh,95px))}
+.compact-catalog .item h2{font-size:.82rem}
+.compact-catalog .item p{font-size:.72rem;line-height:1.15}
+.compact-catalog .action{font-size:.73rem}
+}
 </style>
   <script src="/js/store-status.js?v=7" defer></script>
   <script src="/js/catalog.js?v=3"></script>
@@ -230,7 +239,7 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
      const preferred=Math.min(...photos.map(photo=>photo.getBoundingClientRect().height));
      if(photos.length){
        const excess=Math.max(0,...cards.map(card=>card.querySelector('.item-info').getBoundingClientRect().bottom-card.getBoundingClientRect().bottom+5));
-       list.style.setProperty('--catalog-photo-height',Math.max(48,Math.floor(preferred-excess-2))+'px');
+       list.style.setProperty('--catalog-photo-height',Math.max(52,Math.floor(preferred-excess-2))+'px');
      }
      const clipped=cards.some(card=>card.querySelector('.action').getBoundingClientRect().bottom>card.getBoundingClientRect().bottom-2);
      document.body.classList.toggle('catalog-overflow',clipped);
