@@ -73,5 +73,23 @@ export async function quoteGuestOrder(cart, {date = new Date(), fetchCatalog = f
       discountCents = Math.round(subtotalCents * amount / 10000);
     } else throw new QuoteError('Coupon is invalid.');
   }
-  return {items,subtotalCents,shippingCents,discountCents,totalCents:subtotalCents + shippingCents - discountCents};
+  const beforeTax = subtotalCents + shippingCents - discountCents;
+  const taxCents = cart.postalCode ? await quoteTax(cart.postalCode,beforeTax,fetchCatalog) : 0;
+  return {items,subtotalCents,shippingCents,discountCents,taxCents,totalCents:beforeTax + taxCents};
+}
+
+async function quoteTax(postalCode, beforeTax, fetchCatalog) {
+  const source = await catalogFile('settings/sales-tax.json',fetchCatalog);
+  let settings;
+  try { settings = JSON.parse(source); } catch {}
+  if (settings?.enabled === false) return 0;
+  if (settings?.enabled !== true || !Array.isArray(settings.rates)) {
+    throw new QuoteError('Sales tax settings are temporarily unavailable.');
+  }
+  const matches = settings.rates.filter(rate => rate?.zip === postalCode.slice(0,5));
+  const percent = matches[0]?.percent;
+  if (matches.length !== 1 || typeof percent !== 'number' || !Number.isFinite(percent) || percent < 0 || percent > 25) {
+    throw new QuoteError('Contact the shop to verify sales tax for this delivery address.');
+  }
+  return Math.round(beforeTax * percent / 100);
 }
