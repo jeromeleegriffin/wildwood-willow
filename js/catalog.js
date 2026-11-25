@@ -49,7 +49,7 @@
     if (!res.ok) throw new Error('Content HTTP ' + res.status);
     return res.text();
   }
-  async function document(folder, slug, options = {}) {
+  async function catalogDocument(folder, slug, options = {}) {
     if (!/^[a-z0-9_-]+$/i.test(slug) || !/^(products|services)$/.test(folder)) return null;
     const path = 'content/' + folder + '/' + slug + '.md';
     let markdown;
@@ -83,10 +83,43 @@
       return [...known[folder]];
     }
   }
+  const ordersApi = 'https://wildwood-willow-orders.jeromeleegriffin.workers.dev';
+  let modeRequest;
+  function inventoryMode() {
+    modeRequest ||= fetch(ordersApi + '/health', {cache:'no-store',signal:AbortSignal.timeout(8000)})
+      .then(async response => response.ok ? (await response.json()).mode : null)
+      .catch(() => null);
+    return modeRequest;
+  }
+  async function applyInventory(products) {
+    if (!products.length) return products;
+    const mode = await inventoryMode();
+    if (mode === 'test-only') return products;
+    const lookup = async group => {
+      try {
+        const query = new URLSearchParams(group.map(product => ['product',product.slug]));
+        const response = await fetch(ordersApi + '/availability?' + query,{cache:'no-store',signal:AbortSignal.timeout(8000)});
+        if (response.ok) {
+          const data = (await response.json()).available;
+          return group.map(product => ({...product,liveStock:Object.hasOwn(data ?? {},product.slug) ? data[product.slug] : null}));
+        }
+      } catch {}
+      return group.map(product => ({...product,liveStock:null}));
+    };
+    const groups = [];
+    for (let offset = 0; offset < products.length; offset += 40) groups.push(products.slice(offset,offset+40));
+    if (mode !== 'guest-and-test') return products.map(product => ({...product,liveStock:null}));
+    return (await Promise.all(groups.map(lookup))).flat();
+  }
+  async function document(folder, slug, options = {}) {
+    const record = await catalogDocument(folder,slug,options);
+    return folder === 'products' && record ? (await applyInventory([record]))[0] : record;
+  }
   async function list(folder) {
     const names = await slugs(folder);
-    const results = await Promise.all(names.map(name => document(folder, name)));
-    return results.filter(Boolean);
+    const results = await Promise.all(names.map(name => catalogDocument(folder, name)));
+    const records = results.filter(Boolean);
+    return folder === 'products' ? applyInventory(records) : records;
   }
   function image(url) {
     const src = (url || '').trim();
@@ -97,6 +130,7 @@
     return '';
   }
   function stock(item) {
+    if (item && Object.hasOwn(item,'liveStock')) return Number.isInteger(item.liveStock) && item.liveStock >= 0 ? item.liveStock : null;
     const value = String(item?.quantity_available ?? '').trim();
     return /^\d{1,4}$/.test(value) ? Number(value) : null;
   }
