@@ -107,3 +107,31 @@ assert.equal((await call(''))[1].length,0);
 assert.equal(sql.prepare('SELECT count(*) AS count FROM orders').get().count,1);
 assert.equal(sql.prepare('SELECT order_id FROM order_events').get().order_id,'TEST-REAL-FIXTURE');
 console.log('Passed: authorization, shipping boundaries, coupons, two payment methods, zero charges, retry, unread state, history, status conflicts, tracking, cancellation and all test deletion modes with real-order protection.');
+
+sql.exec(readFileSync(new URL('./inventory.sql', import.meta.url), 'utf8'));
+sql.exec("INSERT INTO inventory(product_slug,on_hand) VALUES ('fixture',2)");
+const {savePendingOrder} = await import('./save-pending-order.mjs');
+const fixture = {id:'ORDER-FIXTURE',customerName:'Fixture',email:'fixture@example.com',
+  shippingAddress:'Test address',items:[{slug:'fixture',qty:1}],subtotalCents:100,
+  discountCents:0,shippingCents:0,totalCents:100,paymentMethod:'cashapp'};
+await savePendingOrder(DB,fixture,Math.floor(Date.now()/1000)+300);
+const real = async (path, method='GET', payload, token='admin') => {
+  const response = await worker.fetch(new Request('https://test.local/orders'+path,{
+    method,headers:token ? {Authorization:'Bearer '+token} : {},
+    body:payload === undefined ? undefined : JSON.stringify(payload)
+  }),{DB});
+  return [response.status,await response.json()];
+};
+assert.equal((await real('','GET',undefined,''))[0],401);
+assert.ok((await real(''))[1].some(order=>order.id===fixture.id));
+assert.equal((await real(''))[1].find(order=>order.id===fixture.id).email,undefined);
+assert.equal((await call('/detail?id='+fixture.id))[0],404);
+assert.equal((await real('/view','POST',{id:fixture.id}))[0],200);
+assert.equal((await real('/status','POST',{id:fixture.id,status:'payment_confirmed'}))[0],200);
+assert.equal((await real('/status','POST',{id:fixture.id,status:'cancelled'}))[0],409);
+assert.equal(sql.prepare("SELECT on_hand FROM inventory WHERE product_slug='fixture'").get().on_hand,1);
+assert.equal((await real('/status','POST',{id:fixture.id,status:'shipped',tracking:'TRACK-FIXTURE'}))[0],200);
+assert.equal((await real('/status','POST',{id:fixture.id,status:'completed'}))[0],200);
+assert.equal((await real('/detail?id='+fixture.id))[1].history.length,4);
+assert.equal((await real('','DELETE',{id:fixture.id}))[0],404);
+console.log('Real order admin passed: sign-in, privacy, test isolation, unread state, inventory consumption, fulfillment history, and deletion protection.');
