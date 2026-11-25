@@ -31,10 +31,19 @@
     .site-menu summary::-webkit-details-marker { display: none; }
     .site-menu nav { position: absolute; inset-inline-end: 0; top: 100%; width: max-content; max-width: 75vw; background: #fffdf8; border: 1px solid #c5b9ab; border-radius: 8px; box-shadow: 0 4px 14px #0002; }
     .site-menu a { display: block; padding: 12px 16px; color: #3e4f32; }
+    @media (max-width: 759px) {
+      html:has(.store-home) { overflow-x: hidden; overflow-y: auto; }
+      .store-home { height: auto; min-height: 100dvh; overflow: visible; }
+      .store-home .main-content { overflow: visible; min-height: min-content; }
+      .store-home .section, .store-home .cards { min-height: min-content; }
+      .store-home .cards { grid-auto-rows: minmax(min-content, 1fr); }
+      .store-home .card { padding-bottom: 20px; }
+      .store-home .card .arrow { line-height: 1; bottom: 4px; right: 4px; }
+    }
   </style>
   <script src="/js/menu-pages.js?v=1" defer></script>
 </head>
-<body>
+<body class="store-home">
   <header class="header">
     <div class="header-inner">
       <div class="brand">
