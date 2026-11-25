@@ -76,7 +76,7 @@
     const guestReceipt = document.getElementById('guest-receipt');
     const guestStatus = document.getElementById('guest-status');
     const guestButton = guestForm.querySelector('button[type="submit"]');
-    let guestAvailable = false, guestSubmitting = false;
+    let guestAvailable = false, guestSubmitting = false, displayedTotalCents = null;
     const checkoutRequests = new Map();
 
     async function refreshGuestAvailability() {
@@ -105,6 +105,7 @@
         items:Array.from(quantities, ([slug,qty]) => ({slug,qty})),coupon:activeCoupon,
         paymentMethod:fields.paymentMethod
       };
+      const expectedTotalCents = displayedTotalCents;
       guestSubmitting = true;
       guestButton.disabled = true;
       guestStatus.textContent = 'Saving your order…';
@@ -118,10 +119,16 @@
         try { sessionStorage.setItem(key,requestId); } catch {}
         const response = await fetch(ordersWorker + '/checkout', {
           method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({...details,requestId})
+          body:JSON.stringify({...details,requestId,expectedTotalCents})
         });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Order could not be saved.');
+        if (!response.ok) {
+          if (data.code === 'TOTAL_CHANGED') {
+            await refreshCart();
+            if (activeCoupon) await verifyCoupon();
+          }
+          throw new Error(data.error || 'Order could not be saved.');
+        }
         const order = data.order;
         const amount = currency.format(order.totalCents / 100);
         const awaiting = order.status === 'awaiting_payment' && order.holdExpiresAt * 1000 > Date.now();
@@ -238,6 +245,7 @@
       const payments = document.getElementById('manual-payment');
       payments.hidden = true;
       guestForm.hidden = true;
+      displayedTotalCents = null;
       couponForm.hidden = !cart.length;
       container.replaceChildren();
       if (!cart.length) {
@@ -314,6 +322,7 @@
           : ' · Subtotal: ' + currency.format(total/100) + ' · Shipping: ' + (shipping && discount>=0 ? currency.format(shipping/100) : 'Free') + (discount>0 ? ' · Coupon: −'+currency.format(discount/100) : '') + ' · Total: ' + currency.format((total+shipping-Math.abs(discount))/100));
       const checkoutReady = !checking && !unavailable && window.WWStoreAvailability?.isOrderingAllowed();
       guestForm.hidden = !checkoutReady || !guestAvailable;
+      if (checkoutReady) displayedTotalCents = total + shipping - Math.abs(discount);
       payments.hidden = !checkoutReady || guestAvailable;
       if (changed && !unavailable) {
         document.getElementById('cart-check-status').textContent =
