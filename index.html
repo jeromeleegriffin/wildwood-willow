@@ -73,6 +73,15 @@
     }
     @media (min-width: 760px) {
       .store-home { max-width: 1720px; }
+      .store-home .hero-text {
+        flex: 0 1 390px;
+        padding: 12px 18px;
+        background: rgba(255, 253, 248, .94);
+        border-radius: 10px;
+      }
+      .store-home .hero h1 { font-size: clamp(1.35rem, 2vw, 2.15rem); line-height: 1.16; }
+      .store-home .hero h1 span { display: block; white-space: nowrap; color: #954d2b; }
+      .store-home .hero p { color: #30382a; line-height: 1.35; margin-bottom: 0; }
       .store-home .hero-frame { width: min(100vw, 1720px); }
       .store-home .main-content { gap: 20px; padding-inline: clamp(16px, 2vw, 36px); }
       .store-home .cards { gap: clamp(12px, 1.2vw, 24px); }
@@ -123,7 +132,7 @@
     <img src="images/leaf-left.png" class="leaf leaf-tl" alt="">
     <img src="images/leaf-left.png" class="leaf leaf-bl" alt="">
     <div class="hero-text">
-      <h1>Rooted in<br>Nature.<br><span>Made for<br>Wellness.</span></h1>
+      <h1>Rooted in<br> Nature.<br><span>Made for<br> Wellness.</span></h1>
       <img src="images/leaf-underline.png" class="underline" alt="">
       <p>Handcrafted botanical products to support your body, mind, and everyday well-being.</p>
       
