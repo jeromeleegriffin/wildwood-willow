@@ -54,12 +54,15 @@ console.log('Inventory passed: last-unit protection, multi-line rollback, unknow
 const {expireInventoryHolds} = await import('./expire-inventory-holds.mjs');
 const adapter = {
   prepare(query) {
-    return {bind: (...args) => () => db.prepare(query).run(...args)};
+    return {bind: (...args) => ({
+      run: () => db.prepare(query).run(...args),
+      first: async () => db.prepare(query).get(...args)
+    })};
   },
   async batch(statements) {
     db.exec('BEGIN');
     try {
-      const results = statements.map(run => ({meta:run()}));
+      const results = statements.map(statement => ({meta:statement.run()}));
       db.exec('COMMIT');
       return results;
     } catch (error) {
@@ -118,3 +121,34 @@ assert.deepEqual(stock('expiring'),[101,2]);
 assert.equal(db.prepare('SELECT COUNT(*) AS n FROM order_events WHERE order_id=?').get(checkoutOrder.id).n,1);
 assert.equal(db.prepare('SELECT COUNT(*) AS n FROM order_events WHERE order_id=?').get('checkout-rejected').n,0);
 console.log('Checkout persistence passed: order, holds, and history commit together, duplicate ID cannot reserve again, and a rejected cart rolls back.');
+
+const {submitGuestOrder} = await import('./submit-guest-order.mjs');
+const fakeCatalog = url => url.endsWith('store-status.json') ?
+  Response.json({mode:'open'}) :
+  new Response('---\ntitle: Fixture\nprice: $8.00\nquantity_available: 2\n---\n');
+db.exec("INSERT INTO inventory(product_slug,on_hand) VALUES ('handler-fixture',1)");
+const env = {DB:adapter,REAL_CHECKOUT_ENABLED:'true'};
+const guest = {
+  requestId:crypto.randomUUID(), customerName:'Guest', email:'guest@example.com',
+  address:{street:'123 Main',city:'Test',region:'TN',postalCode:'00000'},
+  items:[{slug:'handler-fixture',qty:1,price_cents:1}],paymentMethod:'cashapp',totalCents:1
+};
+function submit(details, settings = env) {
+  return submitGuestOrder(new Request('https://example.com/checkout',{
+    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(details)
+  }),settings,{fetchCatalog:fakeCatalog});
+}
+assert.equal((await submit(guest,{DB:adapter})).status,503);
+assert.equal((await submit({...guest,customerName:'x'.repeat(17000)})).status,400);
+const [one,two] = await Promise.all([submit(guest),submit(guest)]);
+assert.deepEqual([one.status,two.status].sort(),[200,201]);
+const result = await one.json();
+assert.equal(result.order.status,'awaiting_payment');
+assert.equal(result.order.totalCents,1600);
+assert.equal(result.order.email,undefined);
+assert.equal((await two.json()).order.id,result.order.id);
+assert.deepEqual(stock('handler-fixture'),[1,1]);
+assert.equal((await submit({...guest,customerName:'Changed guest'})).status,409);
+assert.equal((await submit({...guest,requestId:crypto.randomUUID()})).status,409);
+assert.equal(db.prepare('SELECT COUNT(*) AS n FROM order_events WHERE order_id=?').get(result.order.id).n,1);
+console.log('Guest submission passed: disabled gate, request limit, server pricing, safe receipt, concurrent retry, and stock conflict.');
