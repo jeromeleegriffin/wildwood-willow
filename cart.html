@@ -52,7 +52,7 @@
       <label>Apartment or unit <span>(optional)</span><input name="unit" autocomplete="address-line2" maxlength="80"></label>
       <label>City<input name="city" autocomplete="address-level2" maxlength="100" required></label>
       <label>State<input name="region" autocomplete="address-level1" maxlength="50" required></label>
-      <label>ZIP code<input name="postalCode" autocomplete="postal-code" maxlength="20" required></label>
+      <label>U.S. ZIP code<input name="postalCode" inputmode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" autocomplete="postal-code" maxlength="20" required></label>
       <label>Payment method<select name="paymentMethod" required><option value="">Choose a method</option><option value="cashapp">Cash App</option><option value="venmo">Venmo</option></select></label>
       <button class="checkout-btn" type="submit">Place order</button>
       <p id="guest-status" role="status"></p>
@@ -78,6 +78,7 @@
     const guestButton = guestForm.querySelector('button[type="submit"]');
     let guestAvailable = false, guestSubmitting = false, displayedTotalCents = null;
     const checkoutRequests = new Map();
+    let reviewedQuote;
 
     async function refreshGuestAvailability() {
       try {
@@ -105,7 +106,8 @@
         items:Array.from(quantities, ([slug,qty]) => ({slug,qty})),coupon:activeCoupon,
         paymentMethod:fields.paymentMethod
       };
-      const expectedTotalCents = displayedTotalCents;
+      const quoteKey = JSON.stringify(details);
+      const expectedTotalCents = reviewedQuote?.key === quoteKey ? reviewedQuote.total : displayedTotalCents;
       guestSubmitting = true;
       guestButton.disabled = true;
       guestStatus.textContent = 'Saving your order…';
@@ -126,6 +128,8 @@
           if (data.code === 'TOTAL_CHANGED') {
             await refreshCart();
             if (activeCoupon) await verifyCoupon();
+            reviewedQuote = {key:quoteKey,total:data.totalCents};
+            throw new Error('Review the updated total of ' + currency.format(data.totalCents/100) + ' (sales tax ' + currency.format(data.taxCents/100) + '), then select Place order again.');
           }
           throw new Error(data.error || 'Order could not be saved.');
         }
@@ -136,7 +140,7 @@
         pay.href = fields.paymentMethod === 'cashapp' ? 'https://cash.app/$WWBotanicals26' : 'https://venmo.com/u/WWBotanicals26';
         pay.hidden = !awaiting;
         document.getElementById('guest-order-detail').textContent =
-          order.id + ' · ' + amount + ' · ' + (awaiting
+          order.id + ' · ' + amount + (order.taxCents ? ' including ' + currency.format(order.taxCents/100) + ' sales tax' : '') + ' · ' + (awaiting
             ? 'Awaiting payment. Your items are held until ' + new Date(order.holdExpiresAt * 1000).toLocaleTimeString() + '. Include the order number when paying.'
             : 'Current status: ' + order.status.replaceAll('_',' ') + '.');
         guestReceipt.hidden = false;
