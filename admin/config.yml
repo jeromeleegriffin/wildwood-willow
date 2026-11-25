@@ -56,6 +56,20 @@ collections:
           - { label: Temporary Closure Heading, name: closed_title, widget: string, default: "We'll Be Back Soon" }
           - { label: Temporary Closure Message, name: closed_message, widget: text, default: "Wildwood & Willow Botanicals is temporarily unavailable. Please check back soon." }
           - { label: Orders Paused Message, name: orders_message, widget: text, default: "Online ordering is temporarily paused. You can still browse our products and services." }
+      - file: content/settings/sales-tax.json
+        label: Checkout Sales Tax
+        name: checkout_sales_tax
+        format: json
+        fields:
+          - { label: Collect sales tax, name: enabled, widget: boolean, default: false }
+          - label: Delivery ZIP tax rates
+            name: rates
+            widget: list
+            required: false
+            hint: "Enter verified combined rates. Each rate applies to the entire discounted order and shipping for that exact ZIP. Unlisted ZIP codes require manual review when tax is enabled."
+            fields:
+              - { label: Five-digit delivery ZIP, name: zip, widget: string, pattern: ['^[0-9]{5}$', 'Use five digits'] }
+              - { label: Combined tax rate (percent), name: percent, widget: number, value_type: float, min: 0, max: 25 }
       - file: content/settings/contact.md
         label: Contact & Hours
         name: contact
