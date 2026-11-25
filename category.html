@@ -65,7 +65,7 @@ nav.categories{flex:none;margin:3px 0 7px}
 /* Category browsing: full copy and uncropped photos, with compact two-row pages. */
 body.product-catalog{max-width:1100px}
 .product-catalog #items{grid-template-rows:repeat(2,minmax(0,1fr));gap:8px}
-.product-catalog .photo{aspect-ratio:auto;height:clamp(52px,12dvh,110px);max-height:none;flex:1 1 52px;margin:5px 5px 2px}
+.product-catalog .photo{aspect-ratio:auto;height:clamp(52px,12dvh,110px);max-height:none;flex:none;margin:5px 5px 2px}
 .product-catalog .photo img.product-thumbnail{object-fit:contain}
 .product-catalog .item-info{flex:0 0 auto;overflow:visible;padding:3px 7px 6px}
 .product-catalog .item h2{font-size:.94rem;line-height:1.12;margin-bottom:3px}
@@ -76,7 +76,7 @@ body.product-catalog{max-width:1100px}
 /* If full copy cannot fit, let the page grow rather than hide information. */
 body.product-catalog.catalog-overflow{height:auto;min-height:100dvh;overflow:visible}
 html:has(body.catalog-overflow){height:auto;overflow:auto}
-.catalog-overflow main{flex:none}.catalog-overflow #items{flex:none;grid-template-rows:auto auto;overflow:visible}.catalog-overflow .item{max-height:none}.catalog-overflow .photo{flex:none;height:90px}
+.catalog-overflow main{flex:none}.catalog-overflow #items{flex:none;grid-template-rows:auto auto;overflow:visible}.catalog-overflow .item{max-height:none}
 </style>
   <script src="/js/store-status.js?v=7" defer></script>
   <script src="/js/catalog.js?v=2"></script>
