@@ -25,14 +25,14 @@ function productFields(markdown) {
   const front = markdown?.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---(?:\s|$)/)?.[1];
   const field = name => (front?.match(new RegExp('^' + name + ':[ \\t]*([^\\r\\n]+)','m'))?.[1] || '')
     .trim().replace(/^(['"])(.*)\1$/,'$2');
-  return {title:field('title'),price:field('price').replace(/^\$/,''),stock:field('quantity_available')};
+  return {title:field('title'),price:field('price').replace(/^\$/,'')};
 }
 
 async function quoteItem(item, fetchCatalog) {
   const entry = productFields(await catalogFile('products/' + item.slug + '.md',fetchCatalog));
   const price = priceInCents(entry.price);
-  // Catalog quantities must be explicit. The database hold checks live availability separately.
-  if (!entry.title || price === null || !/^\d{1,4}$/.test(entry.stock) || Number(entry.stock) < item.qty) {
+  // Only the transactional inventory hold decides whether stock can be sold.
+  if (!entry.title || price === null) {
     throw new QuoteError('A product in your cart is unavailable.');
   }
   return {...item,title:entry.title,price_cents:price};
