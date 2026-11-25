@@ -80,11 +80,18 @@ export async function submitGuestOrder(request, env, {fetchCatalog = fetch, date
   } catch (error) {
     return response({error:error.message},400);
   }
+  const expectedTotalCents = body.expectedTotalCents;
+  if (!Number.isSafeInteger(expectedTotalCents) || expectedTotalCents < 0) {
+    return response({error:'Refresh your cart and review the total before placing an order.'},400);
+  }
   const id = 'ORDER-' + input.requestId.toUpperCase();
   try {
     const saved = await findOrder(env.DB,id);
     if (saved) return replay(saved,input);
     const quote = await quoteGuestOrder(input,{date,fetchCatalog});
+    if (expectedTotalCents !== quote.totalCents) {
+      return response({code:'TOTAL_CHANGED',error:'The order total changed. Review the refreshed cart and submit again.'},409);
+    }
     const expires = Math.floor(date.getTime()/1000) + holdSeconds;
     try {
       await savePendingOrder(env.DB,{...input,...quote,id},expires);
