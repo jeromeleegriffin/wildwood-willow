@@ -5,7 +5,7 @@ const safe = text => String(text).replace(/[&<>"']/g,char => ({
   '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
 })[char]);
 
-function orderMessage(order,kind,adminAddress) {
+function orderMessage(order,kind,adminAddresses) {
   const customer = kind === 'customer';
   const method = order.payment_method === 'cashapp' ? 'Cash App' : 'Venmo';
   const status = {
@@ -34,7 +34,8 @@ function orderMessage(order,kind,adminAddress) {
     'Open the administrator dashboard to review: ' + ordersPage
   ];
   return {
-    from,to:customer ? order.email : adminAddress,
+    from,to:customer ? order.email : [adminAddresses[0]],
+    ...(!customer && adminAddresses.length > 1 ? {bcc:adminAddresses.slice(1)} : {}),
     subject:(customer ? 'Order received: ' : 'New online order: ') + order.id,
     text:lines.join('\n'),
     html:lines.map(line=>'<p>'+safe(line)+'</p>').join('')
@@ -44,8 +45,10 @@ function orderMessage(order,kind,adminAddress) {
 const maxAttempts = 6;
 export async function sendOrderEmails(env, now = Math.floor(Date.now()/1000)) {
   if (!env.ORDER_EMAIL?.send) return 0;
-  const adminAddress = typeof env.ORDER_ADMIN_EMAIL === 'string' ? env.ORDER_ADMIN_EMAIL.trim() : '';
-  const adminReady = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminAddress);
+  const configured = typeof env.ORDER_ADMIN_EMAIL === 'string' ? env.ORDER_ADMIN_EMAIL : '';
+  const adminAddresses = [...new Set(configured.split(',').map(address => address.trim().toLowerCase()).filter(Boolean))];
+  const adminReady = adminAddresses.length > 0 && adminAddresses.length <= 50 &&
+    adminAddresses.every(address => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address));
   let sent = 0;
   for (let index=0; index<20; index++) {
     const token = crypto.randomUUID();
@@ -66,7 +69,7 @@ export async function sendOrderEmails(env, now = Math.floor(Date.now()/1000)) {
     let delivery;
     try {
       if (!order) throw Error('Order unavailable');
-      delivery = await env.ORDER_EMAIL.send(orderMessage(order,job.kind,adminAddress));
+      delivery = await env.ORDER_EMAIL.send(orderMessage(order,job.kind,adminAddresses));
     } catch {
       await env.DB.prepare(`UPDATE order_email_outbox SET next_attempt_at=?,lease_token=NULL,leased_until=NULL
         WHERE order_id=? AND kind=? AND lease_token=?`)
