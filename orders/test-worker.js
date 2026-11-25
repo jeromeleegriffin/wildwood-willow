@@ -1,3 +1,4 @@
+import {sendOrderEmails} from './send-order-emails.mjs';
 import {handleAdminInventory} from './admin-inventory.mjs';
 import {expireInventoryHolds} from './expire-inventory-holds.mjs';
 import {submitGuestOrder} from './submit-guest-order.mjs';
@@ -6,8 +7,9 @@ export default {
 async scheduled(_event,env) {
   // A pause stops new orders. Holds already placed must still expire.
   await expireInventoryHolds(env.DB);
+  await sendOrderEmails(env);
 },
-async fetch(req,env){const u=new URL(req.url),h={'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':'https://wwbotanicals.org','Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS','Vary':'Origin'};const out=(v,s=200)=>new Response(JSON.stringify(v),{status:s,headers:h});if(req.method==='OPTIONS')return new Response(null,{status:204,headers:h});if(u.pathname==='/health')return out({ok:true,mode:env.REAL_CHECKOUT_ENABLED==='true'?'guest-and-test':'test-only'});
+async fetch(req,env,ctx){const u=new URL(req.url),h={'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':'https://wwbotanicals.org','Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS','Vary':'Origin'};const out=(v,s=200)=>new Response(JSON.stringify(v),{status:s,headers:h});if(req.method==='OPTIONS')return new Response(null,{status:204,headers:h});if(u.pathname==='/health')return out({ok:true,mode:env.REAL_CHECKOUT_ENABLED==='true'?'guest-and-test':'test-only'});
 if (u.pathname === '/availability') {
   if (req.method !== 'GET') return out({error:'Method not allowed'},405);
   if (env.REAL_CHECKOUT_ENABLED !== 'true') return out({error:'Online ordering is currently paused.'},503);
@@ -30,6 +32,7 @@ if (u.pathname === '/checkout') {
   const origin = req.headers.get('Origin');
   if (origin && origin !== h['Access-Control-Allow-Origin']) return out({error:'Origin not allowed'},403);
   const result = await submitGuestOrder(req,env);
+  if (result.status === 201 && ctx) ctx.waitUntil(sendOrderEmails(env));
   return new Response(result.body,{status:result.status,headers:h});
 }
 try{const token=req.headers.get('Authorization');if(!token?.startsWith('Bearer '))return out({error:'Login required'},401);const auth=await fetch('https://api.github.com/repos/jeromeleegriffin/wildwood-willow',{headers:{Authorization:token,'User-Agent':'Wildwood-Orders',Accept:'application/vnd.github+json'}});if(!auth.ok||!(await auth.json()).permissions?.push)return out({error:'Forbidden'},403);const db=env.DB;
