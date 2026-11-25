@@ -13,7 +13,8 @@
   article { background: #fff; border: 2px solid transparent; padding: 18px; margin-block: 14px; border-radius: 10px; overflow-wrap: anywhere; }
   article.unread { border: 3px solid #a87a22; }
   article h2 { margin: 0 0 .5em; font-size: 1.15rem; }
-  .badge { color: #fff; background: #9a2522; border-radius: .4em; padding: .2em .5em; }
+  .orders-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; line-height: 1.2; }
+  .badge { white-space: nowrap; font-size: .55em; line-height: 1.4; color: #fff; background: #9a2522; border-radius: .4em; padding: .2em .5em; }
   .new { background: #f8e7ad; color: #4d3500; padding: .15em .45em; }
   .danger { background: #8b2926; }
   .details { margin-top: 16px; border-top: 1px solid #ddd5cb; padding-top: 12px; }
@@ -22,7 +23,7 @@
   input[type="text"] { padding: 8px; max-width: 100%; box-sizing: border-box; }
 </style>
 <nav><a href="./">Administrator panel</a><a href="test-order.html">Create a test order</a></nav>
-<h1>Test Orders <span id="count" class="badge" hidden></span></h1>
+<h1 class="orders-heading">Test Orders <span id="count" class="badge" hidden></span></h1>
 <p>Simulated orders for administrator review. Actual charge is $0.00.</p>
 <div class="actions" id="actions">
   <button id="refresh">Refresh</button>
