@@ -104,6 +104,20 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
 .compact-catalog .item p{font-size:.72rem;line-height:1.15}
 .compact-catalog .action{font-size:.73rem}
 }
+@media(min-width:760px){
+ body.compact-catalog{max-width:1600px;width:100%}
+ .compact-catalog .header{padding:10px 16px}
+ .compact-catalog .brand{font-size:1.5rem}
+ .compact-catalog .categories a{font-size:.85rem}
+ .compact-catalog #items{grid-template-columns:repeat(var(--catalog-columns,3),minmax(0,1fr));grid-template-rows:none;grid-auto-rows:max-content;align-content:start;gap:10px;overflow:auto}
+ .compact-catalog .item{max-height:none}
+ .compact-catalog .photo{height:clamp(85px,16vh,165px);margin:6px}
+ .compact-catalog .photo img,.compact-catalog .photo img.product-thumbnail{object-fit:contain}
+ .compact-catalog .item-info{padding:5px 9px 9px}
+ .compact-catalog .item h2{font-size:1rem}
+ .compact-catalog .item p{font-size:.85rem;line-height:1.2}
+ .compact-catalog .pager{padding:8px}
+}
 </style>
   <script src="/js/store-status.js?v=7" defer></script>
   <script src="/js/catalog.js?v=3"></script>
@@ -147,9 +161,16 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
  const list=document.getElementById('items');
  const pager=document.getElementById('catalog-pager'),prev=document.getElementById('prev-page'),next=document.getElementById('next-page');
  let allItems=[],page=0;
- let perPage=matchMedia('(min-width:760px)').matches?6:4;
+ function pageCapacity(){
+   if(innerWidth<760)return 4;
+   const columns=Math.max(3,Math.min(7,Math.floor((Math.min(innerWidth,1600)-26)/210)));
+   list.style.setProperty('--catalog-columns',columns);
+   const rows=Math.max(1,Math.min(4,Math.floor((innerHeight-220)/(Math.min(165,Math.max(85,innerHeight*.16))+125))));
+   return columns*rows;
+ }
+ let perPage=pageCapacity();
  document.body.classList.add('compact-catalog');
- function resizeCatalog(){const first=page*perPage;perPage=matchMedia('(min-width:760px)').matches?6:4;page=Math.floor(first/perPage);render(allItems)}
+ function resizeCatalog(){const first=page*perPage;perPage=pageCapacity();page=Math.floor(first/perPage);render(allItems)}
  window.addEventListener('resize',resizeCatalog);
  window.visualViewport?.addEventListener('resize',resizeCatalog);
  const layoutObserver=new ResizeObserver(()=>fitCatalog());
@@ -232,6 +253,7 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
    requestAnimationFrame(fitCatalog);
  }
  function fitCatalog(){
+     if(innerWidth>=760)return;
      if(document.body.classList.contains('catalog-overflow'))return;
      const cards=[...list.querySelectorAll('.item')];
      list.style.removeProperty('--catalog-photo-height');
