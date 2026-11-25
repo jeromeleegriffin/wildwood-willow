@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventory · Wildwood & Willow</title>
+<style>
+  body { max-width: 640px; margin: auto; padding: 20px; background: #f5f0e8; color: #263420; font: 16px/1.5 system-ui,sans-serif; }
+  a { color: #314a2c; }
+  form { background: #fff; border-radius: 10px; padding: 16px; margin: 14px 0; }
+  h2 { margin: 0; font-size: 1.1rem; overflow-wrap: anywhere; }
+  button,input { font: inherit; padding: 8px 12px; }
+  button { border: 0; border-radius: 6px; background: #3e4f32; color: white; }
+  button:disabled { opacity: .6; }
+  label { display: block; margin-bottom: 8px; }
+  input { width: 5em; margin-left: 4px; }
+  .missing { color: #805215; }
+</style>
+<nav><a href="./">Administrator panel</a> · <a href="orders.html?view=real">Real orders</a></nav>
+<h1>Inventory</h1>
+<p>Enter the physical count on hand, including units reserved for unpaid orders.</p>
+<button id="refresh" type="button">Refresh inventory</button>
+<p id="message" role="status"></p>
+<div id="products"></div>
+<script src="/js/catalog.js?v=4"></script>
+<script>
+const endpoint = 'https://wildwood-willow-orders.jeromeleegriffin.workers.dev/inventory';
+const byId = id => document.getElementById(id);
+const list = byId('products');
+const message = byId('message');
+let busy = false;
+
+async function inventory(payload) {
+  const user = JSON.parse(localStorage.getItem('sveltia-cms.user') || 'null');
+  if (user?.backendName !== 'github' || !user.token) throw Error('Sign in through the administrator panel, then return here.');
+  const response = await fetch(endpoint, {
+    method:payload ? 'POST' : 'GET',
+    headers:{Authorization:'Bearer ' + user.token, ...(payload ? {'Content-Type':'application/json'} : {})},
+    body:payload ? JSON.stringify(payload) : undefined
+  });
+  const result = await response.json();
+  if (!response.ok) throw Error(result.error || 'Inventory could not be loaded.');
+  return result;
+}
+
+function setBusy(value) {
+  busy = value;
+  document.querySelectorAll('button,input').forEach(control => { control.disabled = value; });
+}
+
+function card(product, stock) {
+  const form = document.createElement('form');
+  const title = document.createElement('h2');
+  title.textContent = product.title || product.slug;
+  const current = document.createElement('p');
+  current.textContent = stock ? stock.on_hand + ' on hand · ' + stock.reserved + ' reserved · ' + stock.available + ' available' : 'Stock count needed';
+  if (!stock) current.className = 'missing';
+  const label = document.createElement('label');
+  label.textContent = 'On hand';
+  const count = document.createElement('input');
+  Object.assign(count,{type:'number',inputMode:'numeric',min:String(stock?.reserved ?? 0),max:'9999',step:'1',required:true});
+  if (stock) count.value = stock.on_hand;
+  const submit = document.createElement('button');
+  submit.textContent = 'Save count';
+  const feedback = document.createElement('p');
+  feedback.setAttribute('role','status');
+  label.append(count);
+  form.append(title,current,label,submit,feedback);
+  form.addEventListener('submit',async event => {
+    event.preventDefault();
+    if (busy) return;
+    const onHand = count.valueAsNumber;
+    setBusy(true);
+    feedback.textContent = 'Saving…';
+    try {
+      await inventory({slug:product.slug,onHand,expectedOnHand:stock?.on_hand ?? null});
+      message.textContent = 'Saved count for ' + title.textContent + '.';
+      try { await refresh(); } catch { message.textContent += ' Tap Refresh inventory to reload the list.'; }
+    } catch (error) {
+      feedback.textContent = error.message;
+    } finally {
+      setBusy(false);
+    }
+  });
+  return form;
+}
+
+async function refresh() {
+  const [catalog,data] = await Promise.all([WWCatalog.list('products'),inventory()]);
+  const existing = new Map(data.inventory.map(row => [row.product_slug,row]));
+  if (!catalog.length) throw Error('No catalog products could be loaded.');
+  list.replaceChildren(...catalog.map(product => card(product,existing.get(product.slug))));
+}
+
+byId('refresh').onclick = async () => {
+  if (busy) return;
+  setBusy(true);
+  message.textContent = 'Loading inventory…';
+  try {
+    await refresh();
+    message.textContent = '';
+  } catch (error) {
+    message.textContent = error.message;
+  } finally {
+    setBusy(false);
+  }
+};
+byId('refresh').click();
+</script>
+</html>
