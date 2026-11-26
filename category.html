@@ -121,6 +121,13 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
 .dialog { background: linear-gradient(145deg,#fffdf8,#f5e8d3); border: 1px solid #b8945e; border-radius: 16px; box-shadow: inset 0 0 0 4px #fffaf0,inset 0 0 0 5px #decca9,0 12px 35px #30251d33; max-width: 610px; padding: clamp(30px,5vw,42px); }
 .dialog h2 { font-size: clamp(1.5rem,3vw,2rem); }
 .dialog p { font-size: 1rem; }
+@media (max-width: 759px) {
+  .dialog { padding: 21px 17px 15px; max-height: calc(100dvh - 28px); }
+  .dialog h2 { font-size: 1.32rem; margin-bottom: 8px; }
+  .dialog p { font-size: .92rem; line-height: 1.32; margin-bottom: 9px; }
+  .dialog a { display: inline; margin: 0; }
+  .dialog .close-btn { padding: 9px; margin-top: 4px; }
+}
 </style>
   <script src="/js/store-status.js?v=7" defer></script>
   <script src="/js/catalog.js?v=3"></script>
