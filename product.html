@@ -125,7 +125,7 @@
       const selector=document.getElementById('size-select');
       document.getElementById('size-field').hidden=!data.variants?.length;
       selector.replaceChildren(...options.map(p=>{const o=document.createElement('option');o.value=p.slug;o.textContent=(p.size||'Standard')+' · $'+String(p.price).replace(/^\$/,'')+(WWCatalog.stock(p)===0?' (sold out)':'');return o;}));
-      const choose=()=>{const p=options.find(p=>p.slug===selector.value);window.currentProduct=p;window.currentSlug=p?.slug;updatePurchase(p);};
+      const choose=()=>{document.getElementById('product-quantity').value='1';const p=options.find(p=>p.slug===selector.value);window.currentProduct=p;window.currentSlug=p?.slug;updatePurchase(p);};
       selector.onchange=choose;
       const available=options.find(p=>WWCatalog.stock(p)>0);if(available)selector.value=available.slug;
       choose();
@@ -134,10 +134,10 @@
     }
     function updatePurchase(data) {
       data=data||{};
-      const priceText = (data.price || '').trim();
+      const priceText = String(data.price || '').trim();
       const priceIsValid = /^\$?\s*\d+(?:,\d{3})*(?:\.\d{1,2})?$/.test(priceText);
       window.productPriceReady = priceIsValid;
-      document.getElementById('product-price').textContent = priceIsValid ? priceText : 'Price on request';
+      document.getElementById('product-price').textContent = priceIsValid ? (priceText.startsWith('$')?priceText:'$'+priceText) : 'Price on request';
       document.getElementById('price-help').hidden = priceIsValid;
       const addButton = document.getElementById('add-to-cart-btn');
       const stock = window.WWCatalog.stock(data);

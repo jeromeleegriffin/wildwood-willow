@@ -24,7 +24,8 @@ async function catalogFile(path, fetchCatalog) {
 function parseVariants(front) {
   const lines=front.split(/\r?\n/);
   const start=lines.findIndex(l=>/^variants:\s*$/.test(l));
-  if(start<0) return /^variants:\s*(?!\[\]\s*$).+/m.test(front)?null:[];
+  if(lines.filter(l=>/^variants:/.test(l)).length>1)return null;
+  if(start<0) {const line=lines.find(l=>/^variants:/.test(l));return !line||/^variants:[ \t]*\[\][ \t]*$/.test(line)?[]:null;}
   const rows=[]; let row;
   for(const line of lines.slice(start+1)){
     if(!line.trim()) continue;
@@ -41,7 +42,7 @@ function parseVariants(front) {
     row[key]=val;
   }
   const ids=new Set();
-  for(const r of rows){if(!/^[a-z0-9][a-z0-9-]{0,23}$/.test(r.id||'')||ids.has(r.id)||!r.size||r.size.length>80||!/^\d{1,6}(?:\.\d{1,2})?$/.test(r.price||''))return null;ids.add(r.id);}
+  for(const r of rows){if(!/^[a-z0-9][a-z0-9-]{0,23}$/.test(r.id||'')||ids.has(r.id)||typeof r.size!=='string'||!r.size.trim()||r.size.length>80||!/^\d{1,6}(?:\.\d{1,2})?$/.test(r.price||''))return null;ids.add(r.id);}
   return rows;
 }
 function splitSku(sku){const parts=sku.split('__size__');return parts.length===1?{base:sku,id:null}:parts.length===2&&/^[a-z0-9][a-z0-9-]{0,23}$/.test(parts[1])?{base:parts[0],id:parts[1]}:null;}
@@ -52,14 +53,14 @@ function productFields(markdown) {
   return {title:field('title'),price:field('price').replace(/^\$/,''),variants:parseVariants(front||'')};
 }
 
-async function quoteItem(item, fetchCatalog) {
+export async function quoteItem(item, fetchCatalog) {
   const key=splitSku(item.slug);
   if(!key)throw new QuoteError('Invalid product size.');
   const entry=productFields(await catalogFile('products/'+key.base+'.md',fetchCatalog));
   const variant=entry.variants?.find(v=>v.id===key.id);
   if(entry.variants===null || (key.id&&!variant) || (!key.id&&entry.variants.length))throw new QuoteError('Choose a valid product size.');
   const price=priceInCents(variant?.price??entry.price);
-  if(variant)entry.title+=' ('+variant.size+')';
+  if(variant && entry.title)entry.title+=' ('+variant.size+')';
   // Only the transactional inventory hold decides whether stock can be sold.
   if (!entry.title || price === null) {
     throw new QuoteError('A product in your cart is unavailable.');

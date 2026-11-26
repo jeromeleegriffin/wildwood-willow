@@ -37,3 +37,12 @@ for (const [slug,qty] of [['missing',1]]) {
 }
 await assert.rejects(quoteGuestOrder(cart(1),{fetchCatalog:()=>new Response(null,{status:503})}),/catalog is temporarily unavailable/);
 console.log('Pricing passed: catalog totals, shipping boundaries, stock checks, coupon limits and Central Time expiration.');
+
+const sized='---\ntitle: Fixture\nprice: 9.99\nvariants:\n  - id: 2-oz\n    size: 2 oz\n    price: "9.99"\n  - id: 4-oz\n    size: 4 oz\n    price: 16.99\n---\n';
+const sizeFetch=url=>url.endsWith('/fixture.md')?new Response(sized):new Response(null,{status:404});
+const sizes=await quoteGuestOrder({items:[{slug:'fixture__size__2-oz',qty:2},{slug:'fixture__size__4-oz',qty:1}]},{fetchCatalog:sizeFetch});
+assert.equal(sizes.subtotalCents,3697);
+assert.equal(sizes.items[1].title,'Fixture (4 oz)');
+for(const slug of ['fixture','fixture__size__8-oz'])await assert.rejects(quoteGuestOrder(cart(1,null,slug),{fetchCatalog:sizeFetch}),/size/);
+await assert.rejects(quoteGuestOrder(cart(1,null,'fixture__size__2-oz'),{fetchCatalog:()=>new Response(sized.replace('id: 4-oz','id: 2-oz'))}),/size/);
+console.log('Size pricing and invalid selection checks passed.');
