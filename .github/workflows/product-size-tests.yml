@@ -1,0 +1,19 @@
+name: Product size regression tests
+on:
+  push:
+    branches: [feature/product-size-options]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node --check js/catalog.js
+          for f in orders/*.mjs orders/test-worker.js; do node --check "$f"; done
+          for f in orders/*.test.mjs; do node "$f" || exit 1; done
