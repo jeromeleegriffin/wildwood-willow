@@ -492,3 +492,14 @@ body {
 .service-dialog { background: linear-gradient(145deg,#fffdf8,#f5e8d3); border: 1px solid #b8945e; border-radius: 16px; box-shadow: inset 0 0 0 4px #fffaf0,inset 0 0 0 5px #decca9,0 12px 35px #30251d33; max-width: 610px; padding: clamp(25px,5vw,40px); }
 .service-dialog h2 { font-size: clamp(1.5rem,3vw,2rem); padding-right: 25px; }
 .service-dialog p { font-size: 1rem; }
+
+@media (max-width: 759px) {
+  .service-overlay { padding: 12px; }
+  .service-dialog { padding: 19px 17px 15px; max-height: calc(100dvh - 28px); }
+  .service-dialog h2 { font-size: 1.32rem; margin-bottom: 8px; }
+  .service-dialog p { font-size: .92rem; line-height: 1.32; margin-bottom: 9px; }
+  .service-dialog .service-eyebrow { font-size: .68rem; padding-right: 30px; }
+  .service-dialog .service-contact { margin-top: 9px; }
+  .service-contact a { display: inline; margin: 0; }
+  .service-dismiss { padding: 9px; }
+}
