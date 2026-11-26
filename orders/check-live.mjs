@@ -20,7 +20,9 @@ await Promise.all([
   verifyPage('/admin/orders.html', /id="count" class="badge"/),
   verifyPage('/admin/inventory', /Save count/),
   verifyPage('/js/catalog.js', /function displayPrice/),
-  verifyPage('/admin/config.yml', /name: variants/),
+  verifyPage('/admin/config.yml', /name: id, widget: hidden/),
+  verifyPage('/admin/', /\/admin\/size-ids\.js\?v=1/),
+  verifyPage('/admin/size-ids.js', /registerEventListener/),
   verifyPage('/product.html', /id="size-select"/),
   ...['/inventory','/orders'].map(path => check(worker + path, async response => {
     assert.equal(response.status, 401, path);

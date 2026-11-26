@@ -21,9 +21,9 @@ collections:
         name: variants
         widget: list
         required: false
-        hint: "Optional. Add one row per size. Keep size IDs unchanged after orders have been placed."
+        hint: "Optional. Enter the size and its price. Inventory is tracked separately for each size."
         fields:
-          - { label: Size ID, name: id, widget: string, pattern: ['^[a-z0-9][a-z0-9-]{0,23}$', 'Use lowercase letters, numbers and hyphens'] }
+          - { name: id, widget: hidden, default: "" }
           - { label: Size, name: size, widget: string, hint: "Example: 4 oz" }
           - { label: Price in dollars, name: price, widget: string, pattern: ['^[0-9]{1,6}([.][0-9]{1,2})?$', 'Enter a dollar amount such as 16.99'] }
       - { label: Quantity Available, name: quantity_available, widget: number, value_type: int, min: 0, max: 9999, step: 1, hint: "Legacy catalog count. Use the Inventory page for physical counts used by guest checkout and order reservations." }
