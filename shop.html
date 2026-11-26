@@ -39,7 +39,7 @@
     #ww-order-notice {flex:none;margin:4px!important;padding:6px!important;font-size:.72rem!important;line-height:1.2!important}
   </style>
   <script src="/js/store-status.js?v=7" defer></script>
-  <script src="/js/catalog.js?v=2"></script>
+  <script src="/js/catalog.js?v=6"></script>
 </head>
 <body>
   <div class="shop-wrap">
@@ -142,7 +142,7 @@
         const description = document.createElement('p');
         description.textContent = item.description || '';
         link.append(title);
-        if (mode === 'products' && (item.price || /^0+$/.test(item.quantity_available||''))) {const price=document.createElement('span');price.className='shop-price';price.textContent=/^0+$/.test(item.quantity_available||'')?'Temporarily Sold Out':item.price;link.append(price)}
+        if (mode === 'products' && WWCatalog.displayPrice(item)) {const price=document.createElement('span');price.className='shop-price';price.textContent=WWCatalog.displayPrice(item);link.append(price)}
         link.append(description);
         grid.append(link);
       });

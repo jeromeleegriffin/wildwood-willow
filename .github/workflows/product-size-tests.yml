@@ -1,7 +1,7 @@
 name: Product size regression tests
 on:
   push:
-    branches: [feature/product-size-options]
+    branches: [feature/product-size-options, main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -17,3 +17,11 @@ jobs:
           node --check js/catalog.js
           for f in orders/*.mjs orders/test-worker.js; do node --check "$f"; done
           for f in orders/*.test.mjs; do node "$f" || exit 1; done
+      - name: Verify public site and backend after deployment
+        if: github.ref == 'refs/heads/main'
+        run: |
+          for attempt in $(seq 1 12); do
+            if node orders/check-live.mjs; then exit 0; fi
+            sleep 15
+          done
+          exit 1

@@ -54,7 +54,7 @@
   <meta name="twitter:image:alt" content="Wildwood &amp; Willow Botanicals wooden sign surrounded by herbs, botanical products and tea">
   <link rel="stylesheet" href="css/style.css?v=101">
   <script src="/js/store-status.js?v=7" defer></script>
-  <script src="/js/catalog.js?v=3"></script>
+  <script src="/js/catalog.js?v=6"></script>
   <style>
     .store-home .header:has(.site-menu[open]) { z-index: 20; }
     .site-menu { position: relative; z-index: 3; }
@@ -339,9 +339,8 @@
         const imgHtml = hasImage 
           ? `<img class="${item.folder === 'products' ? 'product-thumbnail' : ''}" src="${imgSrc}" alt="" onerror="this.style.background='#f9f6f2'">`
           : `<div class="placeholder">Admin: add photo</div>`;
-        const priceHtml = item.folder === 'products' && /^0+$/.test(item.quantity_available || '')
-          ? '<div class="price">Temporarily Sold Out</div>'
-          : item.price ? `<div class="price">${item.price}</div>` : '';
+        const displayPrice = item.folder === 'products' ? WWCatalog.displayPrice(item) : item.price;
+        const priceHtml = displayPrice ? '<div class="price">'+String(displayPrice).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))+'</div>' : '';
         const isService = item.folder === 'services';
         const link = `product.html?p=${item.slug}&type=${item.folder}`;
         const actionAttrs = isService

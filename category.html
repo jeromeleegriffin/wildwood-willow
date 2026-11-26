@@ -130,7 +130,7 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
 }
 </style>
   <script src="/js/store-status.js?v=7" defer></script>
-  <script src="/js/catalog.js?v=3"></script>
+  <script src="/js/catalog.js?v=6"></script>
 </head>
 <body>
 <header class="header">
@@ -255,7 +255,7 @@ html:has(body.catalog-overflow){height:auto;overflow:auto}
      const info=document.createElement('div');info.className='item-info';
      const name=document.createElement('h2');name.textContent=item.title||'Item';
      info.append(name);
-     if(!services&&(item.price||/^0+$/.test(item.quantity_available||''))){const price=document.createElement('div');price.className='price';price.textContent=/^0+$/.test(item.quantity_available||'')?'Temporarily Sold Out':item.price;info.append(price)}
+     if(!services&&WWCatalog.displayPrice(item)){const price=document.createElement('div');price.className='price';price.textContent=WWCatalog.displayPrice(item);info.append(price)}
      const description=document.createElement('p');description.textContent=item.description||'';info.append(description);
      const action=document.createElement('span');action.className='action';action.textContent=services?'More information':'View product';info.append(action);
      card.append(photo,info);list.append(card);

@@ -78,7 +78,7 @@
     .popup-btns { flex-wrap: wrap; }
   </style>
   <script src="/js/store-status.js?v=7" defer></script>
-  <script src="/js/catalog.js?v=5"></script>
+  <script src="/js/catalog.js?v=6"></script>
 </head>
 <body>
   <div class="product-page">
@@ -197,6 +197,7 @@
       const current = await window.WWCatalog.document('products', selected, {freshOnly:true});
       if(selected!==window.currentSlug || !current || (current.variants?.length) || current.variants===null || !/^\$?\s*\d+(?:,\d{3})*(?:\.\d{1,2})?$/.test(current.price||''))return;
       window.currentProduct=current;
+      updatePurchase(current);
       if (!window.WWStoreAvailability.isOrderingAllowed()) return;
       const stock = window.WWCatalog.stock(current);
       const qtyInput = document.getElementById('product-quantity');

@@ -172,5 +172,13 @@ function splitSku(sku){const parts=sku.split('__size__');return parts.length===1
     const value = String(item?.quantity_available ?? '').trim();
     return /^\d{1,4}$/.test(value) ? Number(value) : null;
   }
-  window.WWCatalog = {list, document, parse, image, stock, choices};
+  function displayPrice(item) {
+    if(item?.variants===null)return 'Price on request';
+    if(item?.variants?.length){
+      if(Object.hasOwn(item,'variantStock') && stock(item)===0)return 'Temporarily Sold Out';
+      return 'From $'+Math.min(...item.variants.map(v=>Number(v.price))).toFixed(2);
+    }
+    return stock(item)===0?'Temporarily Sold Out':(item?.price||'');
+  }
+  window.WWCatalog = {list, document, parse, image, stock, choices, displayPrice};
 })();

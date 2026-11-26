@@ -19,7 +19,9 @@ await Promise.all([
   verifyPage('/admin/test-order.html', /Test order saved/),
   verifyPage('/admin/orders.html', /id="count" class="badge"/),
   verifyPage('/admin/inventory', /Save count/),
-  verifyPage('/js/catalog.js', /function applyInventory/),
+  verifyPage('/js/catalog.js', /function displayPrice/),
+  verifyPage('/admin/config.yml', /name: variants/),
+  verifyPage('/product.html', /id="size-select"/),
   ...['/inventory','/orders'].map(path => check(worker + path, async response => {
     assert.equal(response.status, 401, path);
     assert.deepEqual(await response.json(), {error:'Login required'});
