@@ -48,16 +48,29 @@ export default {
     try {
       const response = await fetch('https://github.com/login/oauth/access_token',{
         method:'POST',
-        headers:{Accept:'application/json','Content-Type':'application/json'},
-        body:JSON.stringify({
+        headers:{Accept:'application/json','Content-Type':'application/x-www-form-urlencoded','User-Agent':'Wildwood-Willow-OAuth'},
+        body:new URLSearchParams({
           client_id:env.GITHUB_CLIENT_ID,client_secret:env.GITHUB_CLIENT_SECRET,code,redirect_uri:callback
         })
       });
-      const {access_token:token} = await response.json();
-      if (!response.ok || typeof token !== 'string' || !token) throw Error('Token exchange failed');
-      return sendToAdmin('success',{token},clear);
+      const payload = await response.json().catch(()=>null);
+      const token = payload?.access_token;
+      if (!response.ok || typeof token !== 'string' || !token) {
+        const known = {
+          incorrect_client_credentials:'GitHub rejected the application credentials. The website administrator must repair the OAuth configuration.',
+          redirect_uri_mismatch:'GitHub rejected the configured callback address.',
+          bad_verification_code:'The sign-in code expired or was already used. Close the login window and start a fresh sign-in.',
+          unverified_user_email:'Verify your email address in GitHub before signing in.',
+          access_denied:'GitHub denied authorization. Please approve access and retry.'
+        };
+        const reason = Object.hasOwn(known,payload?.error) ? payload.error : 'http_'+response.status;
+        console.warn('GitHub OAuth exchange failed',reason);
+        return sendToAdmin('error',{error:known[reason] || 'GitHub token exchange failed ('+reason+'). Please try again.'},clear);
+      }
+      return sendToAdmin('success',{token,provider:'github'},clear);
     } catch {
-      return sendToAdmin('error',{error:'GitHub sign-in failed. Please try again.'},clear);
+      console.warn('GitHub OAuth network or response error');
+      return sendToAdmin('error',{error:'GitHub sign-in service could not reach or read GitHub. Please try again.'},clear);
     }
   }
 };
