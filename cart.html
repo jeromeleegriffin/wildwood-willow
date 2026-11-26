@@ -29,7 +29,7 @@
     .empty { text-align: center; padding: 40px 0; color: #888; }
   </style>
   <script src="/js/store-status.js?v=7" defer></script>
-  <script src="/js/catalog.js?v=4"></script>
+  <script src="/js/catalog.js?v=5"></script>
 </head>
 <body>
   <div class="cart-page">
@@ -231,7 +231,7 @@
         if (!/^[a-z0-9_-]+$/i.test(slug)) return {stored, current:null};
         // Do not trust prices or titles saved in a visitor's browser.
         const current = await window.WWCatalog.document('products', slug, {freshOnly:true});
-        return {stored, current};
+        return {stored, current:current?.variants?.length||current?.variants===null?null:current};
       }));
       // Prevent a late response from undoing the visitor's quantity edits.
       if (request !== refreshSerial || JSON.stringify(readCart()) !== source) return;

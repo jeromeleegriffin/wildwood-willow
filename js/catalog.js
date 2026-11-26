@@ -11,6 +11,30 @@
     services: ['reflexology','vibration-therapy','foot-detox','massage-chair']
   };
 
+function parseVariants(front) {
+  const lines=front.split(/\r?\n/);
+  const start=lines.findIndex(l=>/^variants:\s*$/.test(l));
+  if(start<0) return /^variants:\s*(?!\[\]\s*$).+/m.test(front)?null:[];
+  const rows=[]; let row;
+  for(const line of lines.slice(start+1)){
+    if(!line.trim()) continue;
+    const item=/^\s*-\s+(id|size|price):\s*(.*?)\s*$/.exec(line);
+    const field=/^\s+(id|size|price):\s*(.*?)\s*$/.exec(line);
+    if(!item&&!field){if(/^\S/.test(line))break;return null;}
+    if(item){row={};rows.push(row);}
+    if(!row)return null;
+    const [,key,raw]=item||field;
+    if(Object.hasOwn(row,key))return null;
+    let val=raw;
+    if(raw.startsWith('"')){try{val=JSON.parse(raw)}catch{return null}}
+    else if(raw.startsWith("'")&&raw.endsWith("'"))val=raw.slice(1,-1).replace(/''/g,"'");
+    row[key]=val;
+  }
+  const ids=new Set();
+  for(const r of rows){if(!/^[a-z0-9][a-z0-9-]{0,23}$/.test(r.id||'')||ids.has(r.id)||!r.size||r.size.length>80||!/^\d{1,6}(?:\.\d{1,2})?$/.test(r.price||''))return null;ids.add(r.id);}
+  return rows;
+}
+function splitSku(sku){const parts=sku.split('__size__');return parts.length===1?{base:sku,id:null}:parts.length===2&&/^[a-z0-9][a-z0-9-]{0,23}$/.test(parts[1])?{base:parts[0],id:parts[1]}:null;}
   function parse(source) {
     const match = source.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---(?:\s|$)/);
     if (!match) return null;
@@ -42,6 +66,7 @@
       }
       data[key] = value;
     }
+    data.variants = parseVariants(match[1]);
     return data;
   }
   async function fetchText(url) {
@@ -109,11 +134,23 @@
     const groups = [];
     for (let offset = 0; offset < products.length; offset += 40) groups.push(products.slice(offset,offset+40));
     if (mode !== 'guest-and-test') return products.map(product => ({...product,liveStock:null}));
-    return (await Promise.all(groups.map(lookup))).flat();
+    const normal=(await Promise.all(groups.map(lookup))).flat();
+    const all=normal.flatMap(p=>p.variants?.map(v=>({...p,slug:p.slug+'__size__'+v.id}))||[]);
+    const chunks=[]; for(let i=0;i<all.length;i+=40)chunks.push(all.slice(i,i+40));
+    const found=new Map((await Promise.all(chunks.map(lookup))).flat().map(p=>[p.slug,p.liveStock]));
+    return normal.map(p=>p.variants?.length?{...p,variantStock:Object.fromEntries(p.variants.map(v=>[v.id,found.get(p.slug+'__size__'+v.id)])),liveStock:p.variants.some(v=>found.get(p.slug+'__size__'+v.id)>0)?p.variants.reduce((sum,v)=>sum+(found.get(p.slug+'__size__'+v.id)||0),0):p.variants.every(v=>found.get(p.slug+'__size__'+v.id)===0)?0:null}:p);
+  }
+  function choices(product) {
+    if(!product || product.variants===null) return [];
+    if(!product.variants?.length) return [product];
+    return product.variants.map(v=>({...product, slug:product.slug+'__size__'+v.id, title:product.title+' ('+v.size+')',price:v.price,quantity_available:null,liveStock:product.variantStock?.[v.id]??null,variants:[],size:v.size}));
   }
   async function document(folder, slug, options = {}) {
-    const record = await catalogDocument(folder,slug,options);
-    return folder === 'products' && record ? (await applyInventory([record]))[0] : record;
+    const key=splitSku(slug); if(!key)return null;
+    const record=await catalogDocument(folder,key.base,options);
+    if(folder!=='products'||!record)return record;
+    const product=(await applyInventory([record]))[0];
+    return key.id ? choices(product).find(v=>v.slug===slug)||null : product;
   }
   async function list(folder) {
     const names = await slugs(folder);
@@ -134,5 +171,5 @@
     const value = String(item?.quantity_available ?? '').trim();
     return /^\d{1,4}$/.test(value) ? Number(value) : null;
   }
-  window.WWCatalog = {list, document, parse, image, stock};
+  window.WWCatalog = {list, document, parse, image, stock, choices};
 })();

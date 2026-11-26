@@ -78,7 +78,7 @@
     .popup-btns { flex-wrap: wrap; }
   </style>
   <script src="/js/store-status.js?v=7" defer></script>
-  <script src="/js/catalog.js?v=4"></script>
+  <script src="/js/catalog.js?v=5"></script>
 </head>
 <body>
   <div class="product-page">
@@ -88,6 +88,7 @@
     </div>
     <div id="product-no-photo" class="product-no-photo">Product photo coming soon</div>
     <h1 id="product-title"></h1>
+    <label id="size-field" hidden>Size <select id="size-select" style="font:inherit;padding:6px;border:1px solid #b8945e;border-radius:6px;max-width:100%"></select></label>
     <div class="price" id="product-price"></div>
     <p id="product-desc"></p>
     <p class="price-help" id="price-help" hidden>This product is not yet available to order online because its price hasn't been set. Please contact the store for details.</p>
@@ -120,6 +121,19 @@
         return;
       }
       document.getElementById('product-title').textContent = data.title || '';
+      const options=WWCatalog.choices(data);
+      const selector=document.getElementById('size-select');
+      document.getElementById('size-field').hidden=!data.variants?.length;
+      selector.replaceChildren(...options.map(p=>{const o=document.createElement('option');o.value=p.slug;o.textContent=(p.size||'Standard')+' · $'+String(p.price).replace(/^\$/,'')+(WWCatalog.stock(p)===0?' (sold out)':'');return o;}));
+      const choose=()=>{const p=options.find(p=>p.slug===selector.value);window.currentProduct=p;window.currentSlug=p?.slug;updatePurchase(p);};
+      selector.onchange=choose;
+      const available=options.find(p=>WWCatalog.stock(p)>0);if(available)selector.value=available.slug;
+      choose();
+      document.getElementById('product-desc').textContent = data.description || '';
+      renderPhoto(data);
+    }
+    function updatePurchase(data) {
+      data=data||{};
       const priceText = (data.price || '').trim();
       const priceIsValid = /^\$?\s*\d+(?:,\d{3})*(?:\.\d{1,2})?$/.test(priceText);
       window.productPriceReady = priceIsValid;
@@ -144,7 +158,9 @@
         document.getElementById('product-quantity').max = stock;
         addButton.disabled = !window.WWStoreAvailability || !window.WWStoreAvailability.isOrderingAllowed();
       }
-      document.getElementById('product-desc').textContent = data.description || '';
+      syncQuantityVisibility();
+    }
+    function renderPhoto(data) {
       const fullPhoto = data.image_full || data.image || data.image_thumb;
       const photoUrl = fullPhoto ? window.WWCatalog.image(fullPhoto) : '';
       const photoFrame = document.getElementById('product-photo');
@@ -164,9 +180,7 @@
         noPhoto.classList.add('is-visible');
       }
       document.title = (data.title || 'Product') + ' - Wildwood & Willow';
-      window.currentProduct = data;
-      window.currentSlug = slug;
-      syncQuantityVisibility();
+
     }
 
     function syncQuantityVisibility() {
@@ -179,7 +193,10 @@
       if (!window.currentProduct || !window.productPriceReady || adding) return;
       adding = true;
       try {
-      const current = await window.WWCatalog.document('products', window.currentSlug, {freshOnly:true});
+      const selected=window.currentSlug;
+      const current = await window.WWCatalog.document('products', selected, {freshOnly:true});
+      if(selected!==window.currentSlug || !current || (current.variants?.length) || current.variants===null || !/^\$?\s*\d+(?:,\d{3})*(?:\.\d{1,2})?$/.test(current.price||''))return;
+      window.currentProduct=current;
       if (!window.WWStoreAvailability.isOrderingAllowed()) return;
       const stock = window.WWCatalog.stock(current);
       const qtyInput = document.getElementById('product-quantity');
