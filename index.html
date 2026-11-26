@@ -106,7 +106,23 @@
       .store-home .card p { font-size: clamp(.95rem, 1.05vw, 1.15rem); line-height: 1.35; }
       .store-home .card .arrow { right: 10px; bottom: 9px; width: 26px; height: 26px; line-height: 1; }
     }
-    .desktop-store-links { display: none; }
+    .store-home .header-actions { display: flex; align-items: center; }
+    .store-home .desktop-store-links { display: flex; gap: 5px; align-items: center; }
+    @media (max-width: 759px) {
+      .store-home .footer-store-links { display: none; }
+      .store-home .desktop-store-links a {
+        color: #3e4f32;
+        font: bold .75rem Georgia, serif;
+        display: inline-flex;
+        min-height: 32px;
+        align-items: center;
+        padding: 4px 7px;
+        border: 1px solid #cbb794;
+        border-radius: 6px;
+        background: #fffaf0;
+        text-decoration: none;
+      }
+    }
     @media (min-width: 760px) {
       .store-home .header-inner { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; }
       .store-home .brand { grid-column: 2; }
@@ -276,6 +292,20 @@
   </div>
 
   <script>
+    const siteMenu = document.querySelector('.site-menu');
+    document.addEventListener('click', event => {
+      if (siteMenu.open && !siteMenu.contains(event.target)) {
+        siteMenu.open = false;
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }, true);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && siteMenu.open) {
+        siteMenu.open = false;
+        siteMenu.querySelector('summary').focus();
+      }
+    });
     async function loadMarkdown(path) {
       try {
         const res = await fetch(path + '?t=' + Date.now());
