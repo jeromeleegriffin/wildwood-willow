@@ -92,7 +92,7 @@ assert.equal((await call('/status','POST',{id:second,status:'cancelled'}))[0],20
 const detail = (await call('/detail?id='+id))[1];
 assert.equal(detail.order.tracking_number,'TRACK-TEST');
 assert.deepEqual(detail.history.map(e=>e.status),['awaiting_payment','payment_confirmed','shipped','completed']);
-sql.exec("INSERT INTO orders SELECT 'TEST-REAL-FIXTURE',created_at,status,customer_name,email,phone,shipping_address,items_json,subtotal_cents,discount_cents,shipping_cents,total_cents,coupon,payment_method,updated_at,first_viewed_at,0,tracking_number FROM orders LIMIT 1");
+sql.exec("INSERT INTO orders (id,created_at,status,customer_name,email,phone,shipping_address,items_json,subtotal_cents,discount_cents,shipping_cents,total_cents,coupon,payment_method,updated_at,first_viewed_at,is_test,tracking_number) SELECT 'TEST-REAL-FIXTURE',created_at,status,customer_name,email,phone,shipping_address,items_json,subtotal_cents,discount_cents,shipping_cents,total_cents,coupon,payment_method,updated_at,first_viewed_at,0,tracking_number FROM orders LIMIT 1");
 sql.exec("INSERT INTO order_events(order_id,status) VALUES ('TEST-REAL-FIXTURE','awaiting_payment')");
 assert.equal((await call('/detail?id=TEST-REAL-FIXTURE'))[0],404);
 assert.equal((await call('','DELETE',{id}))[0],400);

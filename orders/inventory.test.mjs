@@ -124,7 +124,7 @@ console.log('Checkout persistence passed: order, holds, and history commit toget
 
 const {submitGuestOrder} = await import('./submit-guest-order.mjs');
 const fakeCatalog = url => url.endsWith('store-status.json') ?
-  Response.json({mode:'open'}) :
+  Response.json({mode:'open'}) : url.endsWith('sales-tax.json') ? Response.json({enabled:false}) :
   new Response('---\ntitle: Fixture\nprice: $8.00\nquantity_available: 2\n---\n');
 db.exec("INSERT INTO inventory(product_slug,on_hand) VALUES ('handler-fixture',1)");
 const env = {DB:adapter,REAL_CHECKOUT_ENABLED:'true'};
@@ -157,3 +157,14 @@ assert.equal((await submit({...guest,customerName:'Changed guest'})).status,409)
 assert.equal((await submit({...guest,requestId:crypto.randomUUID()})).status,409);
 assert.equal(db.prepare('SELECT COUNT(*) AS n FROM order_events WHERE order_id=?').get(result.order.id).n,1);
 console.log('Guest submission passed: disabled gate, request limit, server pricing, safe receipt, concurrent retry, and stock conflict.');
+
+const sizedCatalog = url => url.endsWith('store-status.json') ? Response.json({mode:'open'}) : url.endsWith('sales-tax.json') ? Response.json({enabled:false}) : new Response('---\ntitle: Size fixture\nprice: 8.00\nvariants:\n  - id: small\n    size: Small\n    price: 8.00\n  - id: large\n    size: Large\n    price: 12.00\n---\n');
+db.exec("INSERT INTO inventory(product_slug,on_hand) VALUES ('sized__size__small',1),('sized__size__large',2)");
+const sizedGuest={...guest,requestId:crypto.randomUUID(),items:[{slug:'sized__size__small',qty:1},{slug:'sized__size__large',qty:1}],expectedTotalCents:2800};
+const sizedSubmit=details=>submitGuestOrder(new Request('https://example.com/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(details)}),env,{fetchCatalog:sizedCatalog});
+assert.equal((await sizedSubmit(sizedGuest)).status,201);
+assert.deepEqual(stock('sized__size__small'),[1,1]);
+assert.deepEqual(stock('sized__size__large'),[2,1]);
+assert.equal((await sizedSubmit({...sizedGuest,requestId:crypto.randomUUID()})).status,409);
+assert.deepEqual(stock('sized__size__large'),[2,1]);
+console.log('Mixed sizes reserve independently and roll back together.');

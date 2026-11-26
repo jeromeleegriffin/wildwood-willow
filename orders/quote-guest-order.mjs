@@ -54,7 +54,7 @@ function productFields(markdown) {
 }
 
 export async function quoteItem(item, fetchCatalog) {
-  const key=splitSku(item.slug);
+  const key=typeof item.slug==='string'&&/^[a-z0-9_-]{1,100}$/.test(item.slug)?splitSku(item.slug):null;
   if(!key)throw new QuoteError('Invalid product size.');
   const entry=productFields(await catalogFile('products/'+key.base+'.md',fetchCatalog));
   const variant=entry.variants?.find(v=>v.id===key.id);
